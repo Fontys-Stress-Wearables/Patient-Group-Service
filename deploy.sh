@@ -4,7 +4,7 @@ tag="latest"
 host="localhost:5001"
 skip_rebuild=false
 
-while getopts t:h:s flag
+while getopts t:h:sn flag
 do
     case "${flag}" in
         t) tag=${OPTARG};;
@@ -20,4 +20,14 @@ if [ "$skip_rebuild" = false ]; then
 fi
 
 cd kubernetes
-kubectl apply -f api.yaml -f db.yaml
+
+# check if the nats service has already been added, if it hasn't add it
+kubectl diff -f nats.yml &>/dev/null
+rc=$?
+if [ $rc -eq 0 ];then
+    kubectl apply -f api.yaml -f db.yaml 
+else
+    kubectl apply -f api.yaml -f db.yaml -f nats.yaml 
+fi
+
+

@@ -1,0 +1,44 @@
+# service
+#
+# set up a service for the nats event  bus
+# NATS uses three ports by default, one for the client, one for clustering and one for monitoring
+
+apiVersion: v1
+kind: Service
+metadata:
+ name: nats-event-bus
+spec:
+ selector:
+  app: nats-event-bus
+ ports:
+  - port: 4222
+    name: nats-client-port 
+    targetPort: 4222
+  - port: 6222
+    name: nats-cluster-port
+    targetPort: 6222
+  - port: 8222 
+    name: nats-monitor-port
+    targetPort: 8222
+---
+# deployment
+#
+# set up a single pod with the NATS image.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: nats-event-bus
+spec:
+ selector:
+  matchLabels:
+   app: nats-event-bus
+ replicas: 1
+ template:
+  metadata:
+   labels:
+    app: nats-event-bus
+  spec:
+   containers:
+    - name: nats-event-bus
+      image: nats:2.7.4
