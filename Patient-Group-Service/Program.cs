@@ -1,15 +1,30 @@
+using Microsoft.EntityFrameworkCore;
+using Patient_Group_Service.Data;
+using Patient_Group_Service.Interfaces;
+using Patient_Group_Service.Middlewares;
+using Patient_Group_Service.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddCors();
 builder.Services.AddControllers();
+builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddTransient<ICaregiverService, CaregiverService>();
+builder.Services.AddTransient<IPatientService, PatientService>();
+builder.Services.AddTransient<IPatientGroupService, PatientGroupService>();
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options
+        .UseLazyLoadingProxies()
+        .UseNpgsql(builder.Configuration.GetConnectionString("PatientGroupContext") ?? string.Empty));
 
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
@@ -22,6 +37,19 @@ if (!app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseMiddleware<ErrorMiddleware>();
+}
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<DatabaseContext>();
+    context.Database.EnsureCreated();
+}
 
 app.UseHttpsRedirection();
 
