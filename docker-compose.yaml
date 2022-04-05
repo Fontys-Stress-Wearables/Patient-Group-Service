@@ -22,6 +22,8 @@ services:
     depends_on:
       patient-group-postgres:
         condition: service_healthy
+      nats:
+        condition: service_healthy
     build:
       context: .
       dockerfile: Patient-Group-Service/Dockerfile
