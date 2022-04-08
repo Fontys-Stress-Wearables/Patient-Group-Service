@@ -2,8 +2,8 @@ version: '3.9'
 services:
   patient-group-postgres:
     image: postgres:14.2
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-test}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
@@ -23,7 +23,7 @@ services:
       patient-group-postgres:
         condition: service_healthy
       nats:
-        condition: service_healthy
+        condition: service_started
     build:
       context: .
       dockerfile: Patient-Group-Service/Dockerfile

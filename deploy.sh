@@ -2,9 +2,12 @@
 
 tag="latest"
 host="localhost:5001"
+image_name="patient-group-service"
+docker_dir="Patient-Group-Service"
+docker_context="."
 skip_rebuild=false
 
-while getopts t:h:sn flag
+while getopts t:h:s flag
 do
     case "${flag}" in
         t) tag=${OPTARG};;
@@ -15,8 +18,8 @@ done
 
 if [ "$skip_rebuild" = false ]; then
     # build backend and push the image to the registry
-    docker build -f Patient-Group-Service/Dockerfile -t $host/patient-group-service:$tag .
-    docker push $host/patient-group-service:$tag
+    docker build -f $docker_dir/Dockerfile -t $host/$image_name:$tag $docker_context
+    docker push $host/$image_name:$tag
 fi
 
 cd kubernetes
