@@ -1,0 +1,26 @@
+name: organization-service
+
+on:
+  push:
+    branches: ['*']
+    tags: ['v*.*.*']
+
+env: 
+  REGISTRY: ghcr.io
+
+jobs:
+  unit-tests-and-lint:
+    name: run unit tests and test lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Unit tests
+        run: dotnet test --no-restore --verbosity normal
+
+      - name: Formatting
+        continue-on-error: true
+        run: dotnet format --verify-no-changes
