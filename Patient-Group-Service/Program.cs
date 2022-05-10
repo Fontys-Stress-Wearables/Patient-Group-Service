@@ -15,6 +15,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddTransient<ICaregiverService, CaregiverService>();
 builder.Services.AddTransient<IPatientService, PatientService>();
+builder.Services.AddTransient<IOrganizationService, OrganizationService>();
 builder.Services.AddTransient<IPatientGroupService, PatientGroupService>();
 
 builder.Services.AddSingleton<INatsService, NatsService>();

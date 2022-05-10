@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Patient_Group_Service.Dtos;
-using Patient_Group_Service.Services;
 using Patient_Group_Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 
 namespace Patient_Group_Service.Controllers;
@@ -44,7 +44,7 @@ public class PatientGroupController : ControllerBase
 
         return _mapper.Map <PatientGroupDTO>(group);
     }
-
+    [Authorize("p-organization-admin")]
     [HttpPost("{id}/patients")]
     public void PostPatientToPatientGroup(string id, [FromBody] string patientId)
     {
@@ -52,7 +52,7 @@ public class PatientGroupController : ControllerBase
 
         _patientGroupService.AddPatientToGroup(id, patient);
     }
-
+    [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
     public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
@@ -76,7 +76,7 @@ public class PatientGroupController : ControllerBase
 
         return _mapper.Map<IEnumerable<PatientDTO>>(patients);
     }
-
+    [Authorize("p-organization-admin")]
     [HttpPost]
     public PatientGroupDTO PostPatientGroup(CreatePatientGroupDTO patientGroup)
     {
