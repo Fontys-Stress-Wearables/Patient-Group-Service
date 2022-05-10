@@ -7,10 +7,12 @@ namespace Patient_Group_Service.Services;
 public class PatientGroupService : IPatientGroupService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INatsService _natsService;
 
-    public PatientGroupService(IUnitOfWork unitOfWork)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService)
     {
         _unitOfWork = unitOfWork;
+        _natsService = natsService;
     }
 
     public PatientGroup GetPatientGroup(string patientGroupId)
@@ -40,6 +42,8 @@ public class PatientGroupService : IPatientGroupService
         };
 
         _unitOfWork.PatientGroups.Add(pg);
+        _natsService.Publish("patient-group-created", pg);
+
         _unitOfWork.Complete();
 
         return pg;
