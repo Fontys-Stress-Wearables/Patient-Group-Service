@@ -56,7 +56,7 @@ public class PatientGroupController : ControllerBase
     [HttpPost("{id}/caregivers")]
     public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        var caregiver = _caregiverService.GetCaregiver(caregiverId);
+        var caregiver = _caregiverService.Get(caregiverId);
 
         _patientGroupService.AddCaregiverToGroup(id, caregiver);
     }
