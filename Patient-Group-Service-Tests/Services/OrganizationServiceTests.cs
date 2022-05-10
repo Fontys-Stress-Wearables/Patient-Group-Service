@@ -16,7 +16,7 @@ public class OrganizationServiceTests
         {
             id="69"
         };
-        _unitOfWorkMock.Setup(x => x.Organizations.GetById("69")).Returns(org);
+        _unitOfWorkMock.Setup(x => x.Organizations.GetById(org.id)).Returns(org);
     }
     
     [Fact]
@@ -30,6 +30,6 @@ public class OrganizationServiceTests
     public void OrganizationsExistsShouldFail()
     {
         IOrganizationService service = new OrganizationService(_unitOfWorkMock.Object);
-        Assert.False(service.Exists("1"));
+        Assert.False(service.Exists(null));
     }
 }
