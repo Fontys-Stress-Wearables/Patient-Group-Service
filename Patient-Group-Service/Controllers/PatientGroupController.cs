@@ -48,7 +48,7 @@ public class PatientGroupController : ControllerBase
     [HttpPost("{id}/patients")]
     public void PostPatientToPatientGroup(string id, [FromBody] string patientId)
     {
-        var patient = _patientService.GetPatient(patientId);
+        var patient = _patientService.Get(patientId);
 
         _patientGroupService.AddPatientToGroup(id, patient);
     }
