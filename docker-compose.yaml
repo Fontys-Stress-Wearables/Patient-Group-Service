@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
 
-  patient-group-api:
+  patient-group-service:
     depends_on:
       patient-group-postgres:
         condition: service_healthy
