@@ -11,7 +11,20 @@ namespace Patient_Group_Service.Services
         {
             _unitOfWork = unitOfWork;
         }
-        public Patient GetPatient(string id)
+
+        public void Create(Patient patient)
+        {
+            var p = _unitOfWork.Patients.Add(patient);
+            
+            if(p == null)
+            {
+                throw new CouldNotCreateException($"Could not create patient with id '{patient.Id}'.");
+            }
+            
+            _unitOfWork.Complete();
+        }
+
+        public Patient Get(string id)
         {
             var patient = _unitOfWork.Patients.GetById(id);
 

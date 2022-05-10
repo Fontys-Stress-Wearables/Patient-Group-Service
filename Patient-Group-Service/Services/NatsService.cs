@@ -1,8 +1,8 @@
-﻿using NATS.Client;
+﻿using System.Text;
+using NATS.Client;
 using Newtonsoft.Json;
 using Patient_Group_Service.Interfaces;
 using Patient_Group_Service.Models;
-using System.Text;
 
 namespace Patient_Group_Service.Services;
 
@@ -10,6 +10,7 @@ public class NatsService : INatsService
 {
     private readonly IConfiguration _configuration;
     private readonly IConnection? _connection;
+    private IAsyncSubscription? _asyncSubscription;
 
     public NatsService(IConfiguration configuration)
     {
@@ -29,7 +30,25 @@ public class NatsService : INatsService
 
     public void Publish<T>(string target, T data)
     {
-        var message = new NatsMessage<T> { target = target, message = data };
+        var message = new NatsMessage<T>{target = target, message = data};
         _connection?.Publish(target, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
+    }
+
+    public void Subscribe<T>(string target, Action<NatsMessage<T>> handler)
+    {
+        _asyncSubscription = _connection?.SubscribeAsync(target);
+        
+        if (_asyncSubscription == null) return;
+        
+        _asyncSubscription.MessageHandler += (_, args) =>
+        {
+            var jsonString = Encoding.UTF8.GetString(args.Message.Data);
+            var msg = JsonConvert.DeserializeObject<NatsMessage<T>>(jsonString);
+            
+            if (msg == null) return;
+            
+            handler(msg);
+        };
+        _asyncSubscription.Start();
     }
 }

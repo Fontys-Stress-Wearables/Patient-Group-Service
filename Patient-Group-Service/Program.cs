@@ -15,7 +15,11 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ICaregiverService, CaregiverService>();
 builder.Services.AddTransient<IPatientService, PatientService>();
 builder.Services.AddTransient<IPatientGroupService, PatientGroupService>();
+
 builder.Services.AddSingleton<INatsService, NatsService>();
+
+builder.Services.AddHostedService<NatsSubscriptionService>();
+builder.Services.AddHostedService<HeartBeatService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

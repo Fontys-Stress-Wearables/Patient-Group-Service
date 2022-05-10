@@ -4,6 +4,7 @@ namespace Patient_Group_Service.Interfaces
 {
     public interface IPatientService
     {
-        public Patient GetPatient(string id);
+        public void Create(Patient patient);
+        public Patient Get(string id);
     }
 }
