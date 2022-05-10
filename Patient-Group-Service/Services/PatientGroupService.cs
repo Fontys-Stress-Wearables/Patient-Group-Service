@@ -49,19 +49,47 @@ public class PatientGroupService : IPatientGroupService
         return pg;
     }
 
-    public void AddPatient(string patientGroupId, Patient patient)
+    public void AddPatient(string patientGroupId, string patientId)
     {
-        var pg = Get(patientGroupId);
+        var patientGroup = Get(patientGroupId);
 
-        _unitOfWork.PatientGroups.AddPatient(pg, patient);
+        var patient = _unitOfWork.Patients.GetById(patientId);
+
+        if (patient == null)
+        {
+            throw new BadRequestException($"Patient with id '{patientId}' doesn't exist.");
+        }
+
+        _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
+
+        _natsService.Publish("patient-group-patient-added", new
+        {
+            patientId = patientId,
+            patientGroupId = patientGroupId
+        });
+
         _unitOfWork.Complete();
     }
 
-    public void AddCaregiver(string patientGroupId, Caregiver caregiver)
+    public void AddCaregiver(string patientGroupId, string caregiverId)
     {
-        var pg = Get(patientGroupId);
+        var patientGroup = Get(patientGroupId);
 
-        _unitOfWork.PatientGroups.AddCaregiver(pg, caregiver);
+        var caregiver = _unitOfWork.Caregivers.GetById(caregiverId);
+
+        if (caregiver == null)
+        {
+            throw new BadRequestException($"Caregiver with id '{caregiverId}' doesn't exist.");
+        }
+
+        _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
+
+        _natsService.Publish("patient-group-caregiver-added", new
+        {
+            caregiverId = caregiverId,
+            patientGroupId = patientGroupId
+        });
+
         _unitOfWork.Complete();
     }
 

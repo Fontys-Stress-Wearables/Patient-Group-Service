@@ -8,9 +8,9 @@ namespace Patient_Group_Service.Interfaces
 
         public PatientGroup Create(string name, string? description);
 
-        public void AddPatient(string patientGroupId, Patient patient);
+        public void AddPatient(string patientGroupId, string patientId);
 
-        public void AddCaregiver(string patientGroupId, Caregiver caregiver);
+        public void AddCaregiver(string patientGroupId, string caregiverId);
         public IEnumerable<PatientGroup> GetAll();
 
         public IEnumerable<Patient> GetPatients(string id);
