@@ -15,7 +15,7 @@ public class PatientGroupService : IPatientGroupService
         _natsService = natsService;
     }
 
-    public PatientGroup GetPatientGroup(string patientGroupId)
+    public PatientGroup Get(string patientGroupId)
     {
         var group = _unitOfWork.PatientGroups.GetById(patientGroupId);
 
@@ -27,7 +27,7 @@ public class PatientGroupService : IPatientGroupService
         return group;
     }
 
-    public PatientGroup CreatePatientGroup(string name, string? description)
+    public PatientGroup Create(string name, string? description)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -49,19 +49,19 @@ public class PatientGroupService : IPatientGroupService
         return pg;
     }
 
-    public void AddPatientToGroup(string patientGroupId, Patient patient)
+    public void AddPatient(string patientGroupId, Patient patient)
     {
-        var pg = GetPatientGroup(patientGroupId);
+        var pg = Get(patientGroupId);
 
-        _unitOfWork.PatientGroups.AddPatientToGroup(pg, patient);
+        _unitOfWork.PatientGroups.AddPatient(pg, patient);
         _unitOfWork.Complete();
     }
 
-    public void AddCaregiverToGroup(string patientGroupId, Caregiver caregiver)
+    public void AddCaregiver(string patientGroupId, Caregiver caregiver)
     {
-        var pg = GetPatientGroup(patientGroupId);
+        var pg = Get(patientGroupId);
 
-        _unitOfWork.PatientGroups.AddCaregiverToGroup(pg, caregiver);
+        _unitOfWork.PatientGroups.AddCaregiver(pg, caregiver);
         _unitOfWork.Complete();
     }
 
@@ -70,15 +70,15 @@ public class PatientGroupService : IPatientGroupService
         return _unitOfWork.PatientGroups.GetAll();
     }
 
-    public IEnumerable<Patient> GetPatientsByPatientGroup(string id)
+    public IEnumerable<Patient> GetPatients(string id)
     {
-        var patientGroup = GetPatientGroup(id);
+        var patientGroup = Get(id);
         return patientGroup.PatientGroupPatients.Select(pg => pg.Patient);
     }
 
-    public IEnumerable<Caregiver> GetCaregiversByPatientGroup(string id)
+    public IEnumerable<Caregiver> GetCaregivers(string id)
     {
-        var patientGroup = GetPatientGroup(id);
+        var patientGroup = Get(id);
         return patientGroup.PatientGroupCaregivers.Select(pg => pg.Caregiver);
     }
 }
