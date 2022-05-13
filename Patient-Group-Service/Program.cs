@@ -84,10 +84,7 @@ if (!app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseMiddleware<ErrorMiddleware>();
-}
+app.UseMiddleware<ErrorMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

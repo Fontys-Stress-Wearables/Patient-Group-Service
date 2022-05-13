@@ -10,7 +10,7 @@ namespace Patient_Group_Service.Interfaces
 
         public void AddPatient(string patientGroupId, string patientId);
 
-        public void AddCaregiver(string patientGroupId, string caregiverId);
+        public Task AddCaregiver(string patientGroupId, string caregiverId);
         public IEnumerable<PatientGroup> GetAll();
 
         public IEnumerable<Patient> GetPatients(string id);

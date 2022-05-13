@@ -19,41 +19,22 @@ public class PatientGroupController : ControllerBase
     private readonly ICaregiverService _caregiverService;
     private readonly IMapper _mapper;
     
-    static readonly string[] scopeRequiredByApi = new string[] { "access_as_organization_admin" };
-    
-    private readonly ITokenAcquisition _tokenAcquisition;
-    private readonly GraphServiceClient _graphServiceClient;
-
     public PatientGroupController
     (
         ILogger<PatientGroupController> logger, IPatientGroupService patientGroupService, 
-        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient)
+        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper)
     {
         _logger = logger;
         _patientGroupService = patientGroupService;
         _patientService = patientService;
         _caregiverService = caregiverService;
         _mapper = mapper;
-        _tokenAcquisition = tokenAcquisition;
-        _graphServiceClient = graphServiceClient;
     }
 
     [Authorize]
     [HttpGet]
-    public async Task<IEnumerable<PatientGroupDTO>> GetPatientGroups()
+    public IEnumerable<PatientGroupDTO> GetPatientGroups()
     {
-        var scopesToAccessDownstreamApi = new string[] { "api://5720ed34-04b7-4397-9239-9eb8581ce2b7/access_as_caregiver" };
-
-        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
-
-        string accessToken = await _tokenAcquisition.GetAccessTokenForUserAsync(scopesToAccessDownstreamApi);
-        var user = await _graphServiceClient.Users
-            .Request()
-            .GetAsync();
-        
-        Console.WriteLine(user);
-
-        
         var groups = _patientGroupService.GetAll();
 
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
@@ -75,9 +56,9 @@ public class PatientGroupController : ControllerBase
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
-    public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
+    public async Task PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        _patientGroupService.AddCaregiver(id, caregiverId);
+        await _patientGroupService.AddCaregiver(id, caregiverId);
     }
 
     [HttpGet("{id}/caregivers")]
