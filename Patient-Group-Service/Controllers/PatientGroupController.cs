@@ -3,6 +3,9 @@ using Patient_Group_Service.Dtos;
 using Patient_Group_Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.Resource;
 
 namespace Patient_Group_Service.Controllers;
 
@@ -15,12 +18,11 @@ public class PatientGroupController : ControllerBase
     private readonly IPatientService _patientService;
     private readonly ICaregiverService _caregiverService;
     private readonly IMapper _mapper;
-
+    
     public PatientGroupController
     (
         ILogger<PatientGroupController> logger, IPatientGroupService patientGroupService, 
-        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper
-    )
+        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper)
     {
         _logger = logger;
         _patientGroupService = patientGroupService;
@@ -29,6 +31,7 @@ public class PatientGroupController : ControllerBase
         _mapper = mapper;
     }
 
+    [Authorize]
     [HttpGet]
     public IEnumerable<PatientGroupDTO> GetPatientGroups()
     {
@@ -36,6 +39,7 @@ public class PatientGroupController : ControllerBase
 
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
+    
     [HttpGet("{id}")]
     public PatientGroupDTO GetPatientGroupById(string id)
     {
@@ -52,9 +56,9 @@ public class PatientGroupController : ControllerBase
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
-    public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
+    public async Task PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        _patientGroupService.AddCaregiver(id, caregiverId);
+        await _patientGroupService.AddCaregiver(id, caregiverId);
     }
 
     [HttpGet("{id}/caregivers")]

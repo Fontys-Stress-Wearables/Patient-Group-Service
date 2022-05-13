@@ -12,7 +12,22 @@ namespace Patient_Group_Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public Caregiver GetCaregiver(string id)
+        public void Create(string id)
+        {
+            var caregiver = new Caregiver
+            {
+                Id = id,
+            };
+            
+            var result = _unitOfWork.Caregivers.Add(caregiver);
+
+            if(result == null)
+            {
+                throw new NotFoundException($"Caregiver with id '{id}' doesn't exist.");
+            }
+        }
+
+        public Caregiver Get(string id)
         {
             var caregiver = _unitOfWork.Caregivers.GetById(id);
 

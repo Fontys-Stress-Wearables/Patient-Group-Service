@@ -4,6 +4,7 @@ namespace Patient_Group_Service.Interfaces
 {
     public interface ICaregiverService
     {
-        public Caregiver GetCaregiver(string id);
+        public void Create(string id);
+        public Caregiver Get(string id);
     }
 }
