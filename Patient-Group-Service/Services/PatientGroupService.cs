@@ -114,4 +114,17 @@ public class PatientGroupService : IPatientGroupService
         var patientGroup = Get(id);
         return patientGroup.PatientGroupCaregivers.Select(pg => pg.Caregiver);
     }
+
+    public void DeletePatientgroup(string id)
+    {
+        var group = _unitOfWork.PatientGroups.GetById(id);
+
+        if (group == null)
+        {
+            throw new NotFoundException($"Patient group with id '{id}' doesn't exist.");
+        }
+        
+        _unitOfWork.PatientGroups.Remove(group);
+        _unitOfWork.Complete();
+    }
 }

@@ -72,6 +72,7 @@ public class PatientGroupController : ControllerBase
 
         return _mapper.Map<IEnumerable<PatientDTO>>(patients);
     }
+    
     [Authorize("p-organization-admin")]
     [HttpPost]
     public PatientGroupDTO PostPatientGroup(CreatePatientGroupDTO patientGroup)
@@ -79,5 +80,12 @@ public class PatientGroupController : ControllerBase
         var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description);
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
+    }
+    
+    [Authorize("p-organization-admin")]
+    [HttpDelete("{id}")]
+    public void DeletePatientGroup(string id)
+    {
+        _patientGroupService.DeletePatientgroup(id);
     }
 }
