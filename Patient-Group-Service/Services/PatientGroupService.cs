@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Server.IIS.Core;
 ﻿using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Patient_Group_Service.Exceptions;
@@ -72,6 +73,33 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
 
         _natsService.Publish("patient-group-patient-added", new
+        {
+            patientId = patientId,
+            patientGroupId = patientGroupId
+        });
+
+        _unitOfWork.Complete();
+    }
+
+    public void RemovePatientFromPatientGroup(string patientGroupId, string patientId)
+    {
+        var patient = _unitOfWork.Patients.GetById(patientId);
+        
+        var patientGroup = Get(patientGroupId);
+        
+        if (patient == null)
+        {
+            throw new BadRequestException($"Patient with id '{patientId}' doesn't exist.");
+        }
+
+        var patientGroupPatient = _unitOfWork.PatientGroups.GetPatientGroupPatient(patientGroup, patient);
+        if (patientGroupPatient == null)
+        {
+            throw new BadRequestException($"Patient with id '{patientId}' could not be removed from patient group with id:'{patientGroupId}'.");
+        }
+        _unitOfWork.PatientGroups.RemovePatient(patientGroupPatient);
+        
+        _natsService.Publish("patient-group-patient-removed", new
         {
             patientId = patientId,
             patientGroupId = patientGroupId

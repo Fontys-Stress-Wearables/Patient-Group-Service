@@ -85,6 +85,13 @@ public class PatientGroupController : ControllerBase
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
     }
+
+    [Authorize("p-organization-admin")]
+    [HttpDelete("{id}/patient")]
+    public void RemovePatientFromPatientGroup(string id, [FromBody] string caregiverId)
+    {
+        _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId);
+    }
     
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}")]
