@@ -16,5 +16,6 @@ namespace Patient_Group_Service.Interfaces
         public IEnumerable<Patient> GetPatients(string id);
 
         public IEnumerable<Caregiver> GetCaregivers(string id);
+        public void DeletePatientgroup(string id);
     }
 }
