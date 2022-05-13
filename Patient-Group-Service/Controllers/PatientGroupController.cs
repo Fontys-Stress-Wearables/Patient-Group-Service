@@ -82,7 +82,7 @@ public class PatientGroupController : ControllerBase
     }
 
     [Authorize("p-organization-admin")]
-    [HttpPost]
+    [HttpDelete("{id}/patient")]
     public void RemovePatientFromPatientGroup(string id, [FromBody] string caregiverId)
     {
         _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId);
