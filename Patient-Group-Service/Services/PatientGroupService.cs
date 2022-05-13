@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Server.IIS.Core;
+﻿using Microsoft.Graph;
+using Microsoft.Identity.Web;
 using Patient_Group_Service.Exceptions;
 using Patient_Group_Service.Interfaces;
 using Patient_Group_Service.Models;
@@ -9,11 +11,18 @@ public class PatientGroupService : IPatientGroupService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INatsService _natsService;
+    private readonly IConfiguration _configuration;
+        
+    private readonly ITokenAcquisition _tokenAcquisition;
+    private readonly GraphServiceClient _graphServiceClient;
 
-    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _natsService = natsService;
+        _tokenAcquisition = tokenAcquisition;
+        _graphServiceClient = graphServiceClient;
+        _configuration = configuration;
     }
 
     public PatientGroup Get(string patientGroupId)
@@ -99,7 +108,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.Complete();
     }
 
-    public void AddCaregiver(string patientGroupId, string caregiverId)
+    public async Task AddCaregiver(string patientGroupId, string caregiverId)
     {
         var patientGroup = Get(patientGroupId);
 
@@ -107,8 +116,24 @@ public class PatientGroupService : IPatientGroupService
 
         if (caregiver == null)
         {
-            caregiver = _unitOfWork.Caregivers.Add(new Caregiver{Id = caregiverId});
+            var scopesToAccessDownstreamApi = new[] { _configuration["AzureAD:GraphScope"] };
 
+            await _tokenAcquisition.GetAccessTokenForUserAsync(scopesToAccessDownstreamApi);
+            var users = await _graphServiceClient.Users
+                .Request()
+                .GetAsync();
+
+            if (users.Any(x => x.Id == caregiverId))
+            {
+                var cg = new Caregiver {Id = caregiverId};
+                caregiver = _unitOfWork.Caregivers.Add(cg);
+                _unitOfWork.Complete();
+            }
+            else
+            {
+                throw new CouldNotCreateException($"Caregiver not add found in azureAD with id {caregiverId}");
+            }
+            
             if (caregiver == null)
             {
                 throw new CouldNotCreateException($"Could not add caregiver {caregiverId}");
@@ -119,8 +144,7 @@ public class PatientGroupService : IPatientGroupService
 
         _natsService.Publish("patient-group-caregiver-added", new
         {
-            caregiverId = caregiverId,
-            patientGroupId = patientGroupId
+            caregiverId, patientGroupId
         });
 
         _unitOfWork.Complete();
@@ -141,5 +165,24 @@ public class PatientGroupService : IPatientGroupService
     {
         var patientGroup = Get(id);
         return patientGroup.PatientGroupCaregivers.Select(pg => pg.Caregiver);
+    }
+
+    public void DeletePatientgroup(string id)
+    {
+        var group = _unitOfWork.PatientGroups.GetById(id);
+
+        if (group == null)
+        {
+            throw new NotFoundException($"Patient group with id '{id}' doesn't exist.");
+        }
+
+        _unitOfWork.PatientGroups.Remove(group);
+        
+        _natsService.Publish("patient-group-removed", new
+        {
+            patientGroupId = id
+        });
+        
+        _unitOfWork.Complete();
     }
 }

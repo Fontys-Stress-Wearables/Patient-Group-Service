@@ -9,12 +9,16 @@ namespace Patient_Group_Service.Interfaces
         public PatientGroup Create(string name, string? description);
 
         public void AddPatient(string patientGroupId, string patientId);
+
         public void RemovePatientFromPatientGroup(string patientGroupId, string patientId);
-        public void AddCaregiver(string patientGroupId, string caregiverId);
+
+        public Task AddCaregiver(string patientGroupId, string caregiverId);
+
         public IEnumerable<PatientGroup> GetAll();
 
         public IEnumerable<Patient> GetPatients(string id);
 
         public IEnumerable<Caregiver> GetCaregivers(string id);
+        public void DeletePatientgroup(string id);
     }
 }
