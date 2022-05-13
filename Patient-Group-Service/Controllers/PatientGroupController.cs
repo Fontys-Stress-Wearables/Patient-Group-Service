@@ -3,6 +3,9 @@ using Patient_Group_Service.Dtos;
 using Patient_Group_Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.Resource;
 
 namespace Patient_Group_Service.Controllers;
 
@@ -15,27 +18,48 @@ public class PatientGroupController : ControllerBase
     private readonly IPatientService _patientService;
     private readonly ICaregiverService _caregiverService;
     private readonly IMapper _mapper;
+    
+    static readonly string[] scopeRequiredByApi = new string[] { "access_as_organization_admin" };
+    
+    private readonly ITokenAcquisition _tokenAcquisition;
+    private readonly GraphServiceClient _graphServiceClient;
+
 
     public PatientGroupController
     (
         ILogger<PatientGroupController> logger, IPatientGroupService patientGroupService, 
-        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper
-    )
+        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient)
     {
         _logger = logger;
         _patientGroupService = patientGroupService;
         _patientService = patientService;
         _caregiverService = caregiverService;
         _mapper = mapper;
+        _tokenAcquisition = tokenAcquisition;
+        _graphServiceClient = graphServiceClient;
     }
 
+    [Authorize]
     [HttpGet]
-    public IEnumerable<PatientGroupDTO> GetPatientGroups()
+    public async Task<IEnumerable<PatientGroupDTO>> GetPatientGroups()
     {
+        var scopesToAccessDownstreamApi = new string[] { "api://5720ed34-04b7-4397-9239-9eb8581ce2b7/access_as_caregiver" };
+
+        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
+
+        string accessToken = await _tokenAcquisition.GetAccessTokenForUserAsync(scopesToAccessDownstreamApi);
+        var user = await _graphServiceClient.Users
+            .Request()
+            .GetAsync();
+        
+        Console.WriteLine(user);
+
+        
         var groups = _patientGroupService.GetAll();
 
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
+    
     [HttpGet("{id}")]
     public PatientGroupDTO GetPatientGroupById(string id)
     {

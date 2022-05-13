@@ -10,7 +10,10 @@ using Patient_Group_Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
+        .EnableTokenAcquisitionToCallDownstreamApi()
+            .AddMicrosoftGraph(builder.Configuration.GetSection("GraphBeta"))
+            .AddInMemoryTokenCaches();
 
 builder.Services.AddAuthorization(policies =>
 {
@@ -37,7 +40,6 @@ builder.Services.AddSingleton<INatsService, NatsService>();
 builder.Services.AddHostedService<NatsSubscriptionService>();
 builder.Services.AddHostedService<HeartBeatService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setup =>
 {
@@ -86,7 +88,6 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseMiddleware<ErrorMiddleware>();
 }
-
 
 using (var scope = app.Services.CreateScope())
 {
