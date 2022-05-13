@@ -10,7 +10,7 @@ namespace Patient_Group_Service.Data
         {
         }
 
-        public void AddCaregiverToGroup(PatientGroup patientGroup, Caregiver caregiver)
+        public void AddCaregiver(PatientGroup patientGroup, Caregiver caregiver)
         {
             _context.Add(new PatientGroupCaregiver()
             {
@@ -19,7 +19,7 @@ namespace Patient_Group_Service.Data
             });
         }
 
-        public void AddPatientToGroup(PatientGroup patientGroup, Patient patient)
+        public void AddPatient(PatientGroup patientGroup, Patient patient)
         {
             _context.Add(new PatientGroupPatient()
             {

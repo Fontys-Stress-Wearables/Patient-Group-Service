@@ -7,13 +7,15 @@ namespace Patient_Group_Service.Services;
 public class PatientGroupService : IPatientGroupService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INatsService _natsService;
 
-    public PatientGroupService(IUnitOfWork unitOfWork)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService)
     {
         _unitOfWork = unitOfWork;
+        _natsService = natsService;
     }
 
-    public PatientGroup GetPatientGroup(string patientGroupId)
+    public PatientGroup Get(string patientGroupId)
     {
         var group = _unitOfWork.PatientGroups.GetById(patientGroupId);
 
@@ -25,7 +27,7 @@ public class PatientGroupService : IPatientGroupService
         return group;
     }
 
-    public PatientGroup CreatePatientGroup(string name, string? description)
+    public PatientGroup Create(string name, string? description)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -40,24 +42,59 @@ public class PatientGroupService : IPatientGroupService
         };
 
         _unitOfWork.PatientGroups.Add(pg);
+        _natsService.Publish("patient-group-created", pg);
+
         _unitOfWork.Complete();
 
         return pg;
     }
 
-    public void AddPatientToGroup(string patientGroupId, Patient patient)
+    public void AddPatient(string patientGroupId, string patientId)
     {
-        var pg = GetPatientGroup(patientGroupId);
+        var patientGroup = Get(patientGroupId);
+        
+        var patient = _unitOfWork.Patients.GetById(patientId);
 
-        _unitOfWork.PatientGroups.AddPatientToGroup(pg, patient);
+        if (patient == null)
+        {
+            throw new BadRequestException($"Patient with id '{patientId}' doesn't exist.");
+        }
+
+        _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
+
+        _natsService.Publish("patient-group-patient-added", new
+        {
+            patientId = patientId,
+            patientGroupId = patientGroupId
+        });
+
         _unitOfWork.Complete();
     }
 
-    public void AddCaregiverToGroup(string patientGroupId, Caregiver caregiver)
+    public void AddCaregiver(string patientGroupId, string caregiverId)
     {
-        var pg = GetPatientGroup(patientGroupId);
+        var patientGroup = Get(patientGroupId);
 
-        _unitOfWork.PatientGroups.AddCaregiverToGroup(pg, caregiver);
+        var caregiver = _unitOfWork.Caregivers.GetById(caregiverId);
+
+        if (caregiver == null)
+        {
+            caregiver = _unitOfWork.Caregivers.Add(new Caregiver{Id = caregiverId});
+
+            if (caregiver == null)
+            {
+                throw new CouldNotCreateException($"Could not add caregiver {caregiverId}");
+            }
+        }
+
+        _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
+
+        _natsService.Publish("patient-group-caregiver-added", new
+        {
+            caregiverId = caregiverId,
+            patientGroupId = patientGroupId
+        });
+
         _unitOfWork.Complete();
     }
 
@@ -66,15 +103,15 @@ public class PatientGroupService : IPatientGroupService
         return _unitOfWork.PatientGroups.GetAll();
     }
 
-    public IEnumerable<Patient> GetPatientsByPatientGroup(string id)
+    public IEnumerable<Patient> GetPatients(string id)
     {
-        var patientGroup = GetPatientGroup(id);
+        var patientGroup = Get(id);
         return patientGroup.PatientGroupPatients.Select(pg => pg.Patient);
     }
 
-    public IEnumerable<Caregiver> GetCaregiversByPatientGroup(string id)
+    public IEnumerable<Caregiver> GetCaregivers(string id)
     {
-        var patientGroup = GetPatientGroup(id);
+        var patientGroup = Get(id);
         return patientGroup.PatientGroupCaregivers.Select(pg => pg.Caregiver);
     }
 }
