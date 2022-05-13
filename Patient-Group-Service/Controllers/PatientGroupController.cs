@@ -40,7 +40,7 @@ public class PatientGroupController : ControllerBase
     public PatientGroupDTO GetPatientGroupById(string id)
     {
         
-        var group = _patientGroupService.GetPatientGroup(id);
+        var group = _patientGroupService.Get(id);
 
         return _mapper.Map <PatientGroupDTO>(group);
     }
@@ -48,23 +48,19 @@ public class PatientGroupController : ControllerBase
     [HttpPost("{id}/patients")]
     public void PostPatientToPatientGroup(string id, [FromBody] string patientId)
     {
-        var patient = _patientService.Get(patientId);
-
-        _patientGroupService.AddPatientToGroup(id, patient);
+        _patientGroupService.AddPatient(id, patientId);
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
     public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        var caregiver = _caregiverService.GetCaregiver(caregiverId);
-
-        _patientGroupService.AddCaregiverToGroup(id, caregiver);
+        _patientGroupService.AddCaregiver(id, caregiverId);
     }
 
     [HttpGet("{id}/caregivers")]
     public IEnumerable<CaregiverDTO> GetCaregiversByPatientGroup(string id)
     {
-        var caregivers = _patientGroupService.GetCaregiversByPatientGroup(id);
+        var caregivers = _patientGroupService.GetCaregivers(id);
 
         return _mapper.Map<IEnumerable<CaregiverDTO>>(caregivers);
     }
@@ -72,7 +68,7 @@ public class PatientGroupController : ControllerBase
     [HttpGet("{id}/patients")]
     public IEnumerable<PatientDTO> GetPatients(string id)
     {
-        var patients = _patientGroupService.GetPatientsByPatientGroup(id);
+        var patients = _patientGroupService.GetPatients(id);
 
         return _mapper.Map<IEnumerable<PatientDTO>>(patients);
     }
@@ -80,7 +76,7 @@ public class PatientGroupController : ControllerBase
     [HttpPost]
     public PatientGroupDTO PostPatientGroup(CreatePatientGroupDTO patientGroup)
     {
-        var newGroup = _patientGroupService.CreatePatientGroup(patientGroup.GroupName, patientGroup.Description);
+        var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description);
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
     }
