@@ -124,12 +124,13 @@ public class PatientGroupService : IPatientGroupService
             throw new NotFoundException($"Patient group with id '{id}' doesn't exist.");
         }
 
+        _unitOfWork.PatientGroups.Remove(group);
+        
         _natsService.Publish("patient-group-removed", new
         {
             patientGroupId = id
         });
         
-        _unitOfWork.PatientGroups.Remove(group);
         _unitOfWork.Complete();
     }
 }
