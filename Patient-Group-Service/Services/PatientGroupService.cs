@@ -53,7 +53,7 @@ public class PatientGroupService : IPatientGroupService
     public void AddPatient(string patientGroupId, string patientId)
     {
         var patientGroup = Get(patientGroupId);
-
+        
         var patient = _unitOfWork.Patients.GetById(patientId);
 
         if (patient == null)
@@ -107,7 +107,12 @@ public class PatientGroupService : IPatientGroupService
 
         if (caregiver == null)
         {
-            throw new BadRequestException($"Caregiver with id '{caregiverId}' doesn't exist.");
+            caregiver = _unitOfWork.Caregivers.Add(new Caregiver{Id = caregiverId});
+
+            if (caregiver == null)
+            {
+                throw new CouldNotCreateException($"Could not add caregiver {caregiverId}");
+            }
         }
 
         _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
