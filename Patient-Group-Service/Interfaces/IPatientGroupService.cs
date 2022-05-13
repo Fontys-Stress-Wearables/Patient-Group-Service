@@ -9,7 +9,7 @@ namespace Patient_Group_Service.Interfaces
         public PatientGroup Create(string name, string? description);
 
         public void AddPatient(string patientGroupId, string patientId);
-
+        public void RemovePatientFromPatientGroup(string patientGroupId, string patientId);
         public void AddCaregiver(string patientGroupId, string caregiverId);
         public IEnumerable<PatientGroup> GetAll();
 
