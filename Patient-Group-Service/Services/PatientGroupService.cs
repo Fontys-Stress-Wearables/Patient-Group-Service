@@ -10,18 +10,18 @@ public class PatientGroupService : IPatientGroupService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INatsService _natsService;
-    
-    static readonly string[] scopeRequiredByApi = new string[] { "access_as_organization_admin" };
+    private readonly IConfiguration _configuration;
         
     private readonly ITokenAcquisition _tokenAcquisition;
     private readonly GraphServiceClient _graphServiceClient;
 
-    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _natsService = natsService;
         _tokenAcquisition = tokenAcquisition;
         _graphServiceClient = graphServiceClient;
+        _configuration = configuration;
     }
 
     public PatientGroup Get(string patientGroupId)
@@ -88,7 +88,7 @@ public class PatientGroupService : IPatientGroupService
 
         if (caregiver == null)
         {
-            var scopesToAccessDownstreamApi = new[] { "api://5720ed34-04b7-4397-9239-9eb8581ce2b7/access_as_caregiver" };
+            var scopesToAccessDownstreamApi = new[] { _configuration["AzureAD:GraphScope"] };
 
             await _tokenAcquisition.GetAccessTokenForUserAsync(scopesToAccessDownstreamApi);
             var users = await _graphServiceClient.Users
