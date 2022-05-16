@@ -102,6 +102,8 @@ app.UseCors(c => c.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseOrganizationAuthorizationMiddleware();
+
 app.MapControllers();
 
 app.Run();

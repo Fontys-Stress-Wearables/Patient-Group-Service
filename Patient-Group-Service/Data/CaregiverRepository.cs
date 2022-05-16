@@ -13,6 +13,18 @@ namespace Patient_Group_Service.Data
 
         }
 
+        public Caregiver? GetByAzureId(string azureId, string tenantId)
+        {
+            var org = _context.Organizations.Include(x => x.Caregivers).First(x => x.Id == tenantId);
+            return org.Caregivers.FirstOrDefault(x => x.AzureID == azureId);
+        }
+
+        public IEnumerable<Caregiver> GetByTenant(string tenantId)
+        {
+            var org = _context.Organizations.Include(x => x.Caregivers).First(x => x.Id == tenantId);
+            return org.Caregivers;
+        }
+
         public void UpdateByTenant(ICollection<Caregiver> caregivers, string tenantId)
         {
             var org = _context.Organizations.Include(x => x.Caregivers).First(x => x.Id == tenantId);

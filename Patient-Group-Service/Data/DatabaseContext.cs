@@ -32,6 +32,14 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<Caregiver>()
             .HasOne(p => p.Organization)
             .WithMany(b => b.Caregivers);
+        
+        modelBuilder.Entity<PatientGroup>()
+            .HasOne(p => p.Organization)
+            .WithMany(b => b.PatientGroups);
+        
+        modelBuilder.Entity<Patient>()
+            .HasOne(p => p.Organization)
+            .WithMany(b => b.Patients);
 
         modelBuilder.Entity<Caregiver>().ToTable("Caregiver");
         modelBuilder.Entity<Patient>().ToTable("Patient");

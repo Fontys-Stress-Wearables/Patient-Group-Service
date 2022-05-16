@@ -12,6 +12,22 @@ namespace Patient_Group_Service.Data
         {
         }
 
+        public IEnumerable<PatientGroup> GetAllFromTenant(string tenantId)
+        {
+            var org = _context.Organizations.Include(x => x.PatientGroups).First(x => x.Id == tenantId);
+            return org.PatientGroups;
+        }
+
+        public PatientGroup? GetByIdAndTenant(string id, string tenantId)
+        {
+            return _context.PatientGroups
+                .Include(x => x.PatientGroupCaregivers)
+                .Include(x => x.PatientGroupPatients)
+                .Include(x => x.Organization)
+                .Where(x => x.Organization.Id == tenantId)
+                .First(x => x.Id == id);   
+        }
+        
         public void AddCaregiver(PatientGroup patientGroup, Caregiver caregiver)
         {
             _context.Add(new PatientGroupCaregiver()

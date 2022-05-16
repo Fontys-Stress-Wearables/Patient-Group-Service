@@ -36,7 +36,7 @@ public class PatientGroupController : ControllerBase
     [HttpGet]
     public IEnumerable<PatientGroupDTO> GetPatientGroups()
     {
-        var groups = _patientGroupService.GetAll();
+        var groups = _patientGroupService.GetAll(HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
@@ -45,7 +45,7 @@ public class PatientGroupController : ControllerBase
     public PatientGroupDTO GetPatientGroupById(string id)
     {
         
-        var group = _patientGroupService.Get(id);
+        var group = _patientGroupService.Get(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map <PatientGroupDTO>(group);
     }
@@ -53,19 +53,19 @@ public class PatientGroupController : ControllerBase
     [HttpPost("{id}/patients")]
     public void PostPatientToPatientGroup(string id, [FromBody] string patientId)
     {
-        _patientGroupService.AddPatient(id, patientId);
+        _patientGroupService.AddPatient(id, patientId,HttpContext.User.GetTenantId()!);
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
     public async Task PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        await _patientGroupService.AddCaregiver(id, caregiverId);
+        await _patientGroupService.AddCaregiver(id, caregiverId, HttpContext.User.GetTenantId()!);
     }
 
     [HttpGet("{id}/caregivers")]
     public IEnumerable<CaregiverDTO> GetCaregiversByPatientGroup(string id)
     {
-        var caregivers = _patientGroupService.GetCaregivers(id);
+        var caregivers = _patientGroupService.GetCaregivers(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<CaregiverDTO>>(caregivers);
     }
@@ -73,7 +73,7 @@ public class PatientGroupController : ControllerBase
     [HttpGet("{id}/patients")]
     public IEnumerable<PatientDTO> GetPatients(string id)
     {
-        var patients = _patientGroupService.GetPatients(id);
+        var patients = _patientGroupService.GetPatients(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<PatientDTO>>(patients);
     }
@@ -82,7 +82,7 @@ public class PatientGroupController : ControllerBase
     [HttpPost]
     public PatientGroupDTO PostPatientGroup(CreatePatientGroupDTO patientGroup)
     {
-        var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description);
+        var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
     }
@@ -91,13 +91,13 @@ public class PatientGroupController : ControllerBase
     [HttpDelete("{id}/patient")]
     public void RemovePatientFromPatientGroup(string id, [FromBody] string caregiverId)
     {
-        _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId);
+        _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId,HttpContext.User.GetTenantId()!);
     }
     
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}")]
     public void DeletePatientGroup(string id)
     {
-        _patientGroupService.DeletePatientgroup(id);
+        _patientGroupService.Delete(id,HttpContext.User.GetTenantId()!);
     }
 }

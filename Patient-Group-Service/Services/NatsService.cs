@@ -37,16 +37,16 @@ public class NatsService : INatsService
     public void Subscribe<T>(string target, Action<NatsMessage<T>> handler)
     {
         _asyncSubscription = _connection?.SubscribeAsync(target);
-        
+
         if (_asyncSubscription == null) return;
-        
+
         _asyncSubscription.MessageHandler += (_, args) =>
         {
             var jsonString = Encoding.UTF8.GetString(args.Message.Data);
             var msg = JsonConvert.DeserializeObject<NatsMessage<T>>(jsonString);
-            
+
             if (msg == null) return;
-            
+
             handler(msg);
         };
         _asyncSubscription.Start();

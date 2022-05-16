@@ -259,7 +259,7 @@ public class PatientGroupServiceTests
         _unitOfWork.Setup(x => x.Caregivers.GetById(caregiver.Id)).Returns(caregiver);
 
         // Act
-        patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id);
+        patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO);
 
         // Assert
         _unitOfWork.Verify(x => x.PatientGroups.AddCaregiver(patientGroup, caregiver), Times.Once);
@@ -290,7 +290,7 @@ public class PatientGroupServiceTests
 
         // Act
         var result = Assert.Throws<NotFoundException>(() =>
-            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id)
+            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO)
         );
 
         // Assert
@@ -325,7 +325,7 @@ public class PatientGroupServiceTests
 
         // Act
         var result = Assert.Throws<BadRequestException>(() =>
-            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id)
+            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO)
         );
 
         // Assert

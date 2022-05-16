@@ -6,6 +6,8 @@ namespace Patient_Group_Service.Interfaces
 {
     public interface IPatientGroupRepository: IGenericRepository<PatientGroup>
     {
+        public IEnumerable<PatientGroup> GetAllFromTenant(string tenantId);
+        public PatientGroup? GetByIdAndTenant(string id, string tenantId);
         public void AddPatient(PatientGroup patientGroup, Patient patient);
         public void AddCaregiver(PatientGroup patientGroup, Caregiver caregiver);
         public void RemovePatient(PatientGroupPatient patient);
