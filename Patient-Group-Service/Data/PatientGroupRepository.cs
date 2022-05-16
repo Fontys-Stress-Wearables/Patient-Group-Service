@@ -41,12 +41,22 @@ namespace Patient_Group_Service.Data
         {
             _context.Remove(patient);
         }
-
-        public PatientGroupPatient? GetPatientGroupPatient(PatientGroup patientGroup, Patient patient)
-        {
-            return _context.Find<PatientGroupPatient>(patient.Id, patientGroup.Id);
-        }
         
+        public void RemoveCaregiver(PatientGroupCaregiver caregiver)
+        {
+            _context.Remove(caregiver);
+        }
+
+        public PatientGroupPatient? GetPatientGroupPatient(PatientGroup patientGroup, string patientId)
+        {
+            return _context.Find<PatientGroupPatient>(patientId, patientGroup.Id);
+        }
+
+        public PatientGroupCaregiver? GetPatientGroupCaregiver(PatientGroup patientGroup, string caregiverId)
+        {
+            return _context.Find<PatientGroupCaregiver>(caregiverId, patientGroup.Id);
+        }
+
 
         public void AddPatient(PatientGroup patientGroup, Patient patient)
         {

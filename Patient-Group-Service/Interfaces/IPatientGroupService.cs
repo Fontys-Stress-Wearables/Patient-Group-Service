@@ -10,9 +10,10 @@ namespace Patient_Group_Service.Interfaces
 
         public void AddPatient(string patientGroupId, string patientId, string tenantId);
 
-        public void RemovePatientFromPatientGroup(string patientGroupId, string patientId, string tenantId);
+        public void RemovePatient(string patientGroupId, string patientId, string tenantId);
 
         public Task AddCaregiver(string patientGroupId, string caregiverId, string tenantId);
+        public void RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId);
 
         public IEnumerable<PatientGroup> GetAll(string tenantId);
 

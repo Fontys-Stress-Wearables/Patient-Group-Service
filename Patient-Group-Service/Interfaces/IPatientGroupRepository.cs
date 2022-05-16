@@ -11,6 +11,9 @@ namespace Patient_Group_Service.Interfaces
         public void AddPatient(PatientGroup patientGroup, Patient patient);
         public void AddCaregiver(PatientGroup patientGroup, Caregiver caregiver);
         public void RemovePatient(PatientGroupPatient patient);
-        public PatientGroupPatient? GetPatientGroupPatient(PatientGroup patientGroup, Patient patient);
+        public void RemoveCaregiver(PatientGroupCaregiver caregiver);
+        public PatientGroupPatient? GetPatientGroupPatient(PatientGroup patientGroup, string patient);
+        public PatientGroupCaregiver? GetPatientGroupCaregiver(PatientGroup patientGroup, string caregiver);
+
     }
 }

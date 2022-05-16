@@ -89,9 +89,16 @@ public class PatientGroupController : ControllerBase
 
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}/patient")]
-    public void RemovePatientFromPatientGroup(string id, [FromBody] string caregiverId)
+    public void RemovePatientFromPatientGroup(string id, [FromBody] string patientId)
     {
-        _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId,HttpContext.User.GetTenantId()!);
+        _patientGroupService.RemovePatient(id, patientId,HttpContext.User.GetTenantId()!);
+    }
+    
+    [Authorize("p-organization-admin")]
+    [HttpDelete("{id}/caregiver")]
+    public void RemoveCaregiverFromPatientGroup(string id, [FromBody] string caregiverId)
+    {
+        _patientGroupService.RemoveCaregiver(id, caregiverId,HttpContext.User.GetTenantId()!);
     }
     
     [Authorize("p-organization-admin")]
@@ -100,4 +107,6 @@ public class PatientGroupController : ControllerBase
     {
         _patientGroupService.Delete(id,HttpContext.User.GetTenantId()!);
     }
+    
+    
 }

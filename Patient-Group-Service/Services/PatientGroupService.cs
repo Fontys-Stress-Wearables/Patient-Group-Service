@@ -69,6 +69,22 @@ public class PatientGroupService : IPatientGroupService
 
         return pg;
     }
+    
+    public void Delete(string id, string tenantId)
+    {
+        var group = _unitOfWork.PatientGroups.GetByIdAndTenant(id, tenantId);
+
+        if (group == null)
+        {
+            throw new NotFoundException($"Patient group with id '{id}' doesn't exist.");
+        }
+
+        _unitOfWork.PatientGroups.Remove(group);
+        
+        _natsService.Publish("patient-group-removed", new PatientGroupRemovedEvent{GroupId = id});
+        
+        _unitOfWork.Complete();
+    }
 
     public void AddPatient(string patientGroupId, string patientId, string tenantId)
     {
@@ -88,18 +104,11 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.Complete();
     }
 
-    public void RemovePatientFromPatientGroup(string patientGroupId, string patientId, string tenantId)
+    public void RemovePatient(string patientGroupId, string patientId, string tenantId)
     {
-        var patient = _unitOfWork.Patients.GetByIdAndTenant(patientId, tenantId);
-        
         var patientGroup = Get(patientGroupId, tenantId);
-        
-        if (patient == null)
-        {
-            throw new BadRequestException($"Patient with id '{patientId}' doesn't exist.");
-        }
 
-        var patientGroupPatient = _unitOfWork.PatientGroups.GetPatientGroupPatient(patientGroup, patient);
+        var patientGroupPatient = _unitOfWork.PatientGroups.GetPatientGroupPatient(patientGroup, patientId);
         if (patientGroupPatient == null)
         {
             throw new BadRequestException($"Patient with id '{patientId}' could not be removed from patient group with id:'{patientGroupId}'.");
@@ -149,6 +158,29 @@ public class PatientGroupService : IPatientGroupService
 
         _unitOfWork.Complete();
     }
+    
+    public void RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId)
+    {
+        var caregiver = _unitOfWork.Caregivers.GetByAzureIdAndTenant(caregiverId, tenantId);
+        
+        var patientGroup = Get(patientGroupId, tenantId);
+        
+        if (caregiver == null)
+        {
+            throw new BadRequestException($"Caregiver with id '{caregiverId}' doesn't exist.");
+        }
+
+        var patientGroupCaregiver = _unitOfWork.PatientGroups.GetPatientGroupCaregiver(patientGroup, caregiver.Id);
+        if (patientGroupCaregiver == null)
+        {
+            throw new BadRequestException($"Caregiver with id '{caregiverId}' could not be removed from patient group with id:'{patientGroupId}'.");
+        }
+        _unitOfWork.PatientGroups.RemoveCaregiver(patientGroupCaregiver);
+        
+        _natsService.Publish("patient-group-caregiver-removed", new CaregiverRemovedEvent{GroupId = patientGroupId, CaregiverId = caregiverId});
+
+        _unitOfWork.Complete();
+    }
 
     public IEnumerable<PatientGroup> GetAll(string tenantId)
     {
@@ -165,21 +197,5 @@ public class PatientGroupService : IPatientGroupService
     {
         var patientGroup = Get(id, tenantId);
         return patientGroup.PatientGroupCaregivers.Select(pg => pg.Caregiver);
-    }
-
-    public void Delete(string id, string tenantId)
-    {
-        var group = _unitOfWork.PatientGroups.GetByIdAndTenant(id, tenantId);
-
-        if (group == null)
-        {
-            throw new NotFoundException($"Patient group with id '{id}' doesn't exist.");
-        }
-
-        _unitOfWork.PatientGroups.Remove(group);
-        
-        _natsService.Publish("patient-group-removed", new PatientGroupRemovedEvent{GroupId = id});
-        
-        _unitOfWork.Complete();
     }
 }
