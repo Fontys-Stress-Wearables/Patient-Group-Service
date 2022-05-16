@@ -1,4 +1,5 @@
 using Patient_Group_Service.Interfaces;
+using Patient_Group_Service.Models;
 
 namespace Patient_Group_Service.Services;
 
@@ -14,5 +15,10 @@ public class OrganizationService : IOrganizationService
     public bool Exists(string id)
     {
         return _unitOfWork.Organizations.GetById(id) != null;
+    }
+
+    public IEnumerable<Organization> GetAll()
+    {
+        return _unitOfWork.Organizations.GetAll();
     }
 }

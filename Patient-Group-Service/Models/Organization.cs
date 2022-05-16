@@ -1,6 +1,9 @@
+using Patient_Group_Service.Models.LinkTables;
+
 namespace Patient_Group_Service.Models;
 
 public class Organization
 {
-    public string id { get; set; }
+    public string Id { get; set; } = "";
+    public virtual List<Caregiver> Caregivers { get; set; }
 }

@@ -39,6 +39,7 @@ builder.Services.AddSingleton<INatsService, NatsService>();
 
 builder.Services.AddHostedService<NatsSubscriptionService>();
 builder.Services.AddHostedService<HeartBeatService>();
+builder.Services.AddHostedService<CaregiverSyncService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setup =>

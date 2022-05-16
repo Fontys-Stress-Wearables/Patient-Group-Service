@@ -1,4 +1,5 @@
-﻿using Patient_Group_Service.Models;
+﻿using System.Collections;
+using Patient_Group_Service.Models;
 
 namespace Patient_Group_Service.Interfaces
 {
@@ -6,5 +7,7 @@ namespace Patient_Group_Service.Interfaces
     {
         public void Create(string id);
         public Caregiver Get(string id);
+
+        public Task<ICollection<Caregiver>> FetchFromGraph(string tenantId);
     }
 }
