@@ -14,6 +14,7 @@ namespace Patient_Group_Service.Interfaces
         public void RemoveCaregiver(PatientGroupCaregiver caregiver);
         public PatientGroupPatient? GetPatientGroupPatient(PatientGroup patientGroup, string patient);
         public PatientGroupCaregiver? GetPatientGroupCaregiver(PatientGroup patientGroup, string caregiver);
-
+        public IEnumerable<PatientGroup> GetCaregiversGroups(string caregiverId, string tenantId);
+        public IEnumerable<PatientGroup> GetPatientsGroups(string patientId, string tenantId);
     }
 }

@@ -15,7 +15,7 @@ namespace Patient_Group_Service.Data
 
         public Caregiver? GetByAzureIdAndTenant(string azureId, string tenantId)
         {
-            var org = _context.Organizations.Include(x => x.Caregivers).First(x => x.Id == tenantId);
+            var org = _context.Organizations.Include(x => x.Caregivers).ThenInclude(x => x.PatientGroupCaregivers).First(x => x.Id == tenantId);
             return org.Caregivers.FirstOrDefault(x => x.AzureID == azureId);
         }
 

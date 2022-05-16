@@ -24,13 +24,13 @@ namespace Patient_Group_Service.Services
             _unitOfWork.Complete();
         }
 
-        public Patient Get(string id)
+        public Patient Get(string id, string tenantId)
         {
-            var patient = _unitOfWork.Patients.GetById(id);
-
+            var patient = _unitOfWork.Patients.GetByIdAndTenant(id, tenantId);;
+            
             if(patient == null)
             {
-                throw new NotFoundException($"Patient with id '{id}' doesn't exist.");
+                throw new NotFoundException($"Patient with id '{id}' not found.");
             }
 
             return patient;

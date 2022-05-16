@@ -66,5 +66,19 @@ namespace Patient_Group_Service.Data
                 PatientGroup = patientGroup
             });
         }
+        
+        public IEnumerable<PatientGroup> GetCaregiversGroups(string caregiverId, string tenantId)
+        {
+            var org = _context.Organizations.Include(x => x.PatientGroups).ThenInclude(x => x.PatientGroupCaregivers).First(x => x.Id == tenantId);
+            
+            return org.PatientGroups.Where(x => x.PatientGroupCaregivers.Any(y => y.Caregiver.Id == caregiverId));
+        }
+        
+        public IEnumerable<PatientGroup> GetPatientsGroups(string patientId, string tenantId)
+        {
+            var org = _context.Organizations.Include(x => x.PatientGroups).ThenInclude(x => x.PatientGroupPatients).First(x => x.Id == tenantId);
+            
+            return org.PatientGroups.Where(x => x.PatientGroupPatients.Any(y => y.Patient.Id == patientId));
+        }
     }
 }

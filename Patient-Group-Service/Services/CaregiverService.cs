@@ -30,7 +30,7 @@ namespace Patient_Group_Service.Services
             }
         }
 
-        public Caregiver? Get(string id, string tenantId)
+        public Caregiver Get(string id, string tenantId)
         {
             var caregiver = _unitOfWork.Caregivers.GetByAzureIdAndTenant(id, tenantId);
 

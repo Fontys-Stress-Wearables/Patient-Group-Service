@@ -12,12 +12,14 @@ public class PatientGroupService : IPatientGroupService
     private readonly IUnitOfWork _unitOfWork;
     private readonly INatsService _natsService;
     private readonly IConfiguration _configuration;
+    
     private readonly ICaregiverService _caregiverService;
+    private readonly IPatientService _patientService;
         
     private readonly ITokenAcquisition _tokenAcquisition;
     private readonly GraphServiceClient _graphServiceClient;
 
-    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient, IConfiguration configuration, ICaregiverService caregiverService)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient, IConfiguration configuration, ICaregiverService caregiverService, IPatientService patientService)
     {
         _unitOfWork = unitOfWork;
         _natsService = natsService;
@@ -25,6 +27,7 @@ public class PatientGroupService : IPatientGroupService
         _graphServiceClient = graphServiceClient;
         _configuration = configuration;
         _caregiverService = caregiverService;
+        _patientService = patientService;
     }
 
     public PatientGroup Get(string patientGroupId, string tenantId)
@@ -90,7 +93,19 @@ public class PatientGroupService : IPatientGroupService
 
         return pg;
     }
-    
+
+    public IEnumerable<PatientGroup> GetForCaregiver(string caregiverId, string tenantId)
+    {
+        var caregiver = _caregiverService.Get(caregiverId, tenantId);
+        
+        if(caregiver == null)
+        {
+            throw new NotFoundException($"Caregiver with id '{caregiverId}' doesn't exist.");
+        }
+
+        return caregiver.PatientGroupCaregivers.Select(x => x.PatientGroup);
+    }
+
     public void Delete(string id, string tenantId)
     {
         var group = _unitOfWork.PatientGroups.GetByIdAndTenant(id, tenantId);
@@ -141,37 +156,11 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.Complete();
     }
 
-    public async Task AddCaregiver(string patientGroupId, string caregiverId, string tenantId)
+    public void AddCaregiver(string patientGroupId, string caregiverId, string tenantId)
     {
         var patientGroup = Get(patientGroupId, tenantId);
 
         var caregiver = _caregiverService.Get(caregiverId, tenantId);
-        
-        if (caregiver == null)
-        {
-            var scopesToAccessDownstreamApi = new[] { _configuration["AzureAD:GraphScope"] };
-
-            await _tokenAcquisition.GetAccessTokenForUserAsync(scopesToAccessDownstreamApi);
-            var users = await _graphServiceClient.Users
-                .Request()
-                .GetAsync();
-
-            if (users.Any(x => x.Id == caregiverId))
-            {
-                var cg = new Caregiver {Id = caregiverId};
-                caregiver = _unitOfWork.Caregivers.Add(cg);
-                _unitOfWork.Complete();
-            }
-            else
-            {
-                throw new CouldNotCreateException($"Caregiver not add found in azureAD with id {caregiverId}");
-            }
-            
-            if (caregiver == null)
-            {
-                throw new CouldNotCreateException($"Could not add caregiver {caregiverId}");
-            }
-        }
 
         _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
 
@@ -212,6 +201,13 @@ public class PatientGroupService : IPatientGroupService
     {
         var patientGroup = Get(id, tenantId);
         return patientGroup.PatientGroupPatients.Select(pg => pg.Patient);
+    }
+
+    public IEnumerable<PatientGroup> GetForPatient(string patientId, string tenantId)
+    {
+        var patient = _patientService.Get(patientId, tenantId);
+        
+        return patient.PatientGroupPatients.Select(pg => pg.PatientGroup);
     }
 
     public IEnumerable<Caregiver> GetCaregivers(string id, string tenantId)

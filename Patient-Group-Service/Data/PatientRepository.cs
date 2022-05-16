@@ -13,7 +13,7 @@ namespace Patient_Group_Service.Data
 
         public Patient? GetByIdAndTenant(string id, string tenantId)
         {
-            var org = _context.Organizations.Include(x => x.Patients).First(x => x.Id == tenantId);
+            var org = _context.Organizations.Include(x => x.Patients).ThenInclude(x => x.PatientGroupPatients).First(x => x.Id == tenantId);
             return org.Patients.FirstOrDefault(x => x.Id == id);     
         }
     }
