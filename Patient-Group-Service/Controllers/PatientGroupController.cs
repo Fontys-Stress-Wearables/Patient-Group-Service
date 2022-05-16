@@ -15,21 +15,12 @@ namespace Patient_Group_Service.Controllers;
 [Route("patient-groups")]
 public class PatientGroupController : ControllerBase
 {
-    private readonly ILogger<PatientGroupController> _logger;
     private readonly IPatientGroupService _patientGroupService;
-    private readonly IPatientService _patientService;
-    private readonly ICaregiverService _caregiverService;
     private readonly IMapper _mapper;
     
-    public PatientGroupController
-    (
-        ILogger<PatientGroupController> logger, IPatientGroupService patientGroupService, 
-        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper)
+    public PatientGroupController(IPatientGroupService patientGroupService, IMapper mapper)
     {
-        _logger = logger;
         _patientGroupService = patientGroupService;
-        _patientService = patientService;
-        _caregiverService = caregiverService;
         _mapper = mapper;
     }
 
@@ -85,6 +76,15 @@ public class PatientGroupController : ControllerBase
         var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
+    }
+    
+    [Authorize("p-organization-admin")]
+    [HttpPut("{id}")]
+    public PatientGroupDTO UpdatePatientGroup(string id, [FromBody] UpdatePatientGroupDTO patientGroup)
+    {
+        var updatedGroup = _patientGroupService.Update(id, patientGroup.GroupName, patientGroup.Description,HttpContext.User.GetTenantId()!);
+
+        return _mapper.Map<PatientGroupDTO>(updatedGroup);
     }
 
     [Authorize("p-organization-admin")]

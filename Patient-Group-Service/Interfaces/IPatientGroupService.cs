@@ -5,6 +5,7 @@ namespace Patient_Group_Service.Interfaces
     public interface IPatientGroupService
     {
         public PatientGroup Get(string patientGroupId, string tenantId);
+        public PatientGroup Update(string patientGroupId, string? name, string? description, string tenantId);
 
         public PatientGroup Create(string name, string? description, string tenantId);
 

@@ -39,6 +39,27 @@ public class PatientGroupService : IPatientGroupService
         return group;
     }
 
+    public PatientGroup Update(string patientGroupId, string? name, string? description, string tenantId)
+    {
+        var group = _unitOfWork.PatientGroups.GetByIdAndTenant(patientGroupId, tenantId);
+
+        if (group == null)
+        {
+            throw new NotFoundException($"Patient group with id '{patientGroupId}' doesn't exist.");
+        }
+
+        if (name != null) group.GroupName = name;
+        if (description != null) group.Description = description;
+        
+        var updated = _unitOfWork.PatientGroups.Update(group);
+        
+        _natsService.Publish("patient-group-updated", new PatientGroupUpdatedEvent{GroupId = updated.Id, Name = updated.GroupName, Description = updated.Description});
+
+        _unitOfWork.Complete();
+
+        return updated;
+    }
+
     public PatientGroup Create(string name, string? description, string tenantId)
     {
         if (string.IsNullOrWhiteSpace(name))
