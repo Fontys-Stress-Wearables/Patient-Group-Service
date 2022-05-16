@@ -17,11 +17,17 @@ public class CaregiverService : ICaregiverService
         _configuration = configuration;
     }
 
-    public Caregiver Get(string id, string tenantId)
+    public async Task<Caregiver> Get(string id, string tenantId)
     {
         var caregiver = _unitOfWork.Caregivers.GetByAzureIdAndTenant(id, tenantId);
 
-        if(caregiver == null)
+        if (caregiver != null) return caregiver;
+        
+        var newCaregivers = await FetchFromGraph(tenantId);
+            
+        caregiver = newCaregivers.FirstOrDefault(c => c.AzureID == id);
+
+        if (caregiver == null)
         {
             throw new NotFoundException($"Caregiver with id '{id}' doesn't exist.");
         }

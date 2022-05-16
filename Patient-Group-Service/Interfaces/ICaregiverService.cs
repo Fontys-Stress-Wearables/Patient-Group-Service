@@ -4,7 +4,7 @@ namespace Patient_Group_Service.Interfaces;
 
 public interface ICaregiverService
 {
-    public Caregiver Get(string id, string tenantId);
+    public Task<Caregiver> Get(string id, string tenantId);
 
     public Task<ICollection<Caregiver>> FetchFromGraph(string tenantId);
 }

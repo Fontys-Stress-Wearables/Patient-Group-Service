@@ -44,9 +44,9 @@ public class PatientGroupController : ControllerBase
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
-    public void PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
+    public async Task PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        _patientGroupService.AddCaregiver(id, caregiverId, HttpContext.User.GetTenantId()!);
+        await _patientGroupService.AddCaregiver(id, caregiverId, HttpContext.User.GetTenantId()!);
     }
 
     [HttpGet("{id}/caregivers")]
@@ -92,9 +92,9 @@ public class PatientGroupController : ControllerBase
     
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}/caregiver")]
-    public void RemoveCaregiverFromPatientGroup(string id, [FromBody] string caregiverId)
+    public async Task RemoveCaregiverFromPatientGroup(string id, [FromBody] string caregiverId)
     {
-        _patientGroupService.RemoveCaregiver(id, caregiverId,HttpContext.User.GetTenantId()!);
+        await _patientGroupService.RemoveCaregiver(id, caregiverId,HttpContext.User.GetTenantId()!);
     }
     
     [Authorize("p-organization-admin")]

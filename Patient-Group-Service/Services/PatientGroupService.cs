@@ -85,9 +85,9 @@ public class PatientGroupService : IPatientGroupService
         return pg;
     }
 
-    public IEnumerable<PatientGroup> GetForCaregiver(string caregiverId, string tenantId)
+    public async Task<IEnumerable<PatientGroup>> GetForCaregiver(string caregiverId, string tenantId)
     {
-        var caregiver = _caregiverService.Get(caregiverId, tenantId);
+        var caregiver = await _caregiverService.Get(caregiverId, tenantId);
         
         if(caregiver == null)
         {
@@ -117,12 +117,7 @@ public class PatientGroupService : IPatientGroupService
     {
         var patientGroup = Get(patientGroupId, tenantId);
         
-        var patient = _unitOfWork.Patients.GetByIdAndTenant(patientId, tenantId);
-
-        if (patient == null)
-        {
-            throw new BadRequestException($"Patient with id '{patientId}' doesn't exist.");
-        }
+        var patient = _patientService.Get(patientId, tenantId);
 
         _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
 
@@ -147,11 +142,11 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.Complete();
     }
 
-    public void AddCaregiver(string patientGroupId, string caregiverId, string tenantId)
+    public async Task AddCaregiver(string patientGroupId, string caregiverId, string tenantId)
     {
         var patientGroup = Get(patientGroupId, tenantId);
 
-        var caregiver = _caregiverService.Get(caregiverId, tenantId);
+        var caregiver = await _caregiverService.Get(caregiverId, tenantId);
 
         _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
 
@@ -160,16 +155,11 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.Complete();
     }
     
-    public void RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId)
+    public async Task RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId)
     {
-        var caregiver = _unitOfWork.Caregivers.GetByAzureIdAndTenant(caregiverId, tenantId);
+        var caregiver = await _caregiverService.Get(caregiverId, tenantId);
         
         var patientGroup = Get(patientGroupId, tenantId);
-        
-        if (caregiver == null)
-        {
-            throw new BadRequestException($"Caregiver with id '{caregiverId}' doesn't exist.");
-        }
 
         var patientGroupCaregiver = _unitOfWork.PatientGroups.GetPatientGroupCaregiver(patientGroup, caregiver.Id);
         if (patientGroupCaregiver == null)

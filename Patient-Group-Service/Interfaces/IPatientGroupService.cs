@@ -13,8 +13,8 @@ public interface IPatientGroupService
 
     public void RemovePatient(string patientGroupId, string patientId, string tenantId);
 
-    public void AddCaregiver(string patientGroupId, string caregiverId, string tenantId);
-    public void RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId);
+    public Task AddCaregiver(string patientGroupId, string caregiverId, string tenantId);
+    public Task RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId);
 
     public IEnumerable<PatientGroup> GetAll(string tenantId);
 
@@ -22,7 +22,7 @@ public interface IPatientGroupService
     public IEnumerable<PatientGroup> GetForPatient(string patientId, string tenantId);
 
     public IEnumerable<Caregiver> GetCaregivers(string id, string tenantId);
-    public IEnumerable<PatientGroup> GetForCaregiver(string caregiverId, string tenantId);
+    public Task<IEnumerable<PatientGroup>> GetForCaregiver(string caregiverId, string tenantId);
     public void Delete(string id, string tenantId);
         
 
