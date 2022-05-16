@@ -2,6 +2,6 @@
 
 public class PatientRemovedEvent
 {
-    public string PatientId { get; set; }
-    public string GroupId { get; set; }
+    public string PatientId { get; set; } = "";
+    public string GroupId { get; set; } = "";
 }

@@ -2,6 +2,6 @@
 
 public class CaregiverRemovedEvent
 {
-    public string CaregiverId { get; set; }
-    public string GroupId { get; set; }
+    public string CaregiverId { get; set; } = "";
+    public string GroupId { get; set; } = "";
 }

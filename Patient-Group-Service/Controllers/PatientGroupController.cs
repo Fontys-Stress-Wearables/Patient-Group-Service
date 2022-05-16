@@ -1,13 +1,9 @@
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using Patient_Group_Service.Dtos;
 using Patient_Group_Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
-using Azure.Identity;
-using Microsoft.Graph;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.Resource;
 
 namespace Patient_Group_Service.Controllers;
 

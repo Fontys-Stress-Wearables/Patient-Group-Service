@@ -1,6 +1,4 @@
-﻿using Microsoft.Graph;
-using Microsoft.Identity.Web;
-using Patient_Group_Service.Events;
+﻿using Patient_Group_Service.Events;
 using Patient_Group_Service.Exceptions;
 using Patient_Group_Service.Interfaces;
 using Patient_Group_Service.Models;
@@ -11,21 +9,14 @@ public class PatientGroupService : IPatientGroupService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INatsService _natsService;
-    private readonly IConfiguration _configuration;
-    
+
     private readonly ICaregiverService _caregiverService;
     private readonly IPatientService _patientService;
-        
-    private readonly ITokenAcquisition _tokenAcquisition;
-    private readonly GraphServiceClient _graphServiceClient;
 
-    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ITokenAcquisition tokenAcquisition, GraphServiceClient graphServiceClient, IConfiguration configuration, ICaregiverService caregiverService, IPatientService patientService)
+    public PatientGroupService(IUnitOfWork unitOfWork, INatsService natsService, ICaregiverService caregiverService, IPatientService patientService)
     {
         _unitOfWork = unitOfWork;
         _natsService = natsService;
-        _tokenAcquisition = tokenAcquisition;
-        _graphServiceClient = graphServiceClient;
-        _configuration = configuration;
         _caregiverService = caregiverService;
         _patientService = patientService;
     }

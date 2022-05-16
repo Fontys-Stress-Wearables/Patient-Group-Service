@@ -18,10 +18,10 @@ public class NatsService : INatsService
         _connection = Connect();
     }
 
-    public IConnection Connect()
+    private IConnection Connect()
     {
-        ConnectionFactory cf = new ConnectionFactory();
-        Options opts = ConnectionFactory.GetDefaultOptions();
+        var cf = new ConnectionFactory();
+        var opts = ConnectionFactory.GetDefaultOptions();
 
         opts.Url = _configuration.GetConnectionString("NATSContext");
 

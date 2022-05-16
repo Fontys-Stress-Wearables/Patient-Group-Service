@@ -1,8 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Azure.Identity;
-using Microsoft.Graph;
-using Patient_Group_Service.Interfaces;
-using Patient_Group_Service.Models;
+﻿using Patient_Group_Service.Interfaces;
 
 namespace Patient_Group_Service.Services;
 
@@ -70,6 +66,7 @@ public class CaregiverSyncService : IHostedService, IDisposable
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         _timer.Dispose();
     }
 }

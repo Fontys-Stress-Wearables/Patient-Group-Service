@@ -1,5 +1,3 @@
-using Patient_Group_Service.Models.LinkTables;
-
 namespace Patient_Group_Service.Models;
 
 public class Organization

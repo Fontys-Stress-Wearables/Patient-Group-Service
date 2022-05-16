@@ -1,5 +1,4 @@
 ﻿using Patient_Group_Service.Models;
-using Patient_Group_Service.Services;
 
 namespace Patient_Group_Service.Interfaces;
 

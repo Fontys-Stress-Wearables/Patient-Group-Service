@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web;
 using Patient_Group_Service.Dtos;
@@ -8,7 +7,6 @@ using Patient_Group_Service.Interfaces;
 namespace Patient_Group_Service.Controllers;
 
 [ApiController]
-[Authorize("p-organization-admin")]
 [Route("caregiver")]
 public class CaregiverController : ControllerBase
 {
