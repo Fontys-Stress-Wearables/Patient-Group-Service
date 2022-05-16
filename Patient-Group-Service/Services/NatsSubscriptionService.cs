@@ -17,7 +17,33 @@ public class NatsSubscriptionService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _natsService.Subscribe<Patient>("patient-created", OnPatientCreated);
+        
+        _natsService.Subscribe<Organization>("organization-created", OnOrganizationCreated);
+        _natsService.Subscribe<Organization>("organization-removed", OnOrganizationRemoved);
+        
         return Task.CompletedTask;
+    }
+    
+    private void OnOrganizationRemoved(NatsMessage<Organization> message)
+    {
+        using var scope = _services.CreateScope();
+
+        var scopedOrganizationService = 
+            scope.ServiceProvider
+                .GetRequiredService<IOrganizationService>();
+        
+        scopedOrganizationService.Remove(message.message);
+    }
+    
+    private void OnOrganizationCreated(NatsMessage<Organization> message)
+    {
+        using var scope = _services.CreateScope();
+
+        var scopedOrganizationService = 
+            scope.ServiceProvider
+                .GetRequiredService<IOrganizationService>();
+        
+        scopedOrganizationService.Create(message.message);
     }
 
     private void OnPatientCreated(NatsMessage<Patient> message)

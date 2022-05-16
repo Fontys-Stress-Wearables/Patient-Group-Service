@@ -12,6 +12,18 @@ public class OrganizationService : IOrganizationService
         _unitOfWork = unitOfWork;
     }
 
+    public void Create(Organization organization)
+    {
+        _unitOfWork.Organizations.Add(organization);
+        _unitOfWork.Complete();
+    }
+
+    public void Remove(Organization organization)
+    {
+        _unitOfWork.Organizations.Remove(organization);
+        _unitOfWork.Complete();
+    }
+
     public bool Exists(string id)
     {
         return _unitOfWork.Organizations.GetById(id) != null;
