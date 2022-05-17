@@ -9,4 +9,5 @@ public class PatientGroup
     public string? Description { get; set; }
     public virtual ICollection<PatientGroupPatient> PatientGroupPatients { get; set; } = new List<PatientGroupPatient>();
     public virtual ICollection<PatientGroupCaregiver> PatientGroupCaregivers { get; set; } = new HashSet<PatientGroupCaregiver>();
+    public virtual Organization Organization { get; set; }
 }

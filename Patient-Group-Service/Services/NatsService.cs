@@ -18,10 +18,10 @@ public class NatsService : INatsService
         _connection = Connect();
     }
 
-    public IConnection Connect()
+    private IConnection Connect()
     {
-        ConnectionFactory cf = new ConnectionFactory();
-        Options opts = ConnectionFactory.GetDefaultOptions();
+        var cf = new ConnectionFactory();
+        var opts = ConnectionFactory.GetDefaultOptions();
 
         opts.Url = _configuration.GetConnectionString("NATSContext");
 
@@ -37,16 +37,16 @@ public class NatsService : INatsService
     public void Subscribe<T>(string target, Action<NatsMessage<T>> handler)
     {
         _asyncSubscription = _connection?.SubscribeAsync(target);
-        
+
         if (_asyncSubscription == null) return;
-        
+
         _asyncSubscription.MessageHandler += (_, args) =>
         {
             var jsonString = Encoding.UTF8.GetString(args.Message.Data);
             var msg = JsonConvert.DeserializeObject<NatsMessage<T>>(jsonString);
-            
+
             if (msg == null) return;
-            
+
             handler(msg);
         };
         _asyncSubscription.Start();

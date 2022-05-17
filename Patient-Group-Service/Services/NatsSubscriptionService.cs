@@ -1,4 +1,5 @@
-﻿using Patient_Group_Service.Interfaces;
+﻿using Patient_Group_Service.Events;
+using Patient_Group_Service.Interfaces;
 using Patient_Group_Service.Models;
 
 namespace Patient_Group_Service.Services;
@@ -16,11 +17,37 @@ public class NatsSubscriptionService : BackgroundService
     
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _natsService.Subscribe<Patient>("patient-created", OnPatientCreated);
+        _natsService.Subscribe<CreatePatientEvent>("patient-created", OnPatientCreated);
+        
+        _natsService.Subscribe<Organization>("organization-created", OnOrganizationCreated);
+        _natsService.Subscribe<Organization>("organization-removed", OnOrganizationRemoved);
+        
         return Task.CompletedTask;
     }
+    
+    private void OnOrganizationRemoved(NatsMessage<Organization> message)
+    {
+        using var scope = _services.CreateScope();
 
-    private void OnPatientCreated(NatsMessage<Patient> message)
+        var scopedOrganizationService = 
+            scope.ServiceProvider
+                .GetRequiredService<IOrganizationService>();
+        
+        scopedOrganizationService.Remove(message.message);
+    }
+    
+    private void OnOrganizationCreated(NatsMessage<Organization> message)
+    {
+        using var scope = _services.CreateScope();
+
+        var scopedOrganizationService = 
+            scope.ServiceProvider
+                .GetRequiredService<IOrganizationService>();
+        
+        scopedOrganizationService.Create(message.message);
+    }
+
+    private void OnPatientCreated(NatsMessage<CreatePatientEvent> message)
     {
         using var scope = _services.CreateScope();
         
@@ -28,6 +55,11 @@ public class NatsSubscriptionService : BackgroundService
             scope.ServiceProvider
                 .GetRequiredService<IPatientService>();
         
-        scopedPatientService.Create(message.message);
+        scopedPatientService.Create(new Patient
+        {
+            Id = message.message.Id,
+            FirstName = message.message.FirstName,
+            LastName = message.message.LastName
+        }, message.message.Tenant);
     }
 }

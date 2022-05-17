@@ -13,6 +13,7 @@ public class DatabaseContext : DbContext
     public DbSet<Caregiver> Caregivers { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<PatientGroup> PatientGroups { get; set; }
+    public DbSet<Organization> Organizations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,10 +28,23 @@ public class DatabaseContext : DbContext
             .HasForeignKey(t => t.CaregiverId);
         modelBuilder.Entity<PatientGroupCaregiver>().HasOne(t => t.PatientGroup).WithMany(t => t.PatientGroupCaregivers)
             .HasForeignKey(t => t.PatientGroupId);
+        
+        modelBuilder.Entity<Caregiver>()
+            .HasOne(p => p.Organization)
+            .WithMany(b => b.Caregivers);
+        
+        modelBuilder.Entity<PatientGroup>()
+            .HasOne(p => p.Organization)
+            .WithMany(b => b.PatientGroups);
+        
+        modelBuilder.Entity<Patient>()
+            .HasOne(p => p.Organization)
+            .WithMany(b => b.Patients);
 
         modelBuilder.Entity<Caregiver>().ToTable("Caregiver");
         modelBuilder.Entity<Patient>().ToTable("Patient");
         modelBuilder.Entity<PatientGroup>().ToTable("PatientGroup");
+        modelBuilder.Entity<Organization>().ToTable("Organization");
     }
 
 }

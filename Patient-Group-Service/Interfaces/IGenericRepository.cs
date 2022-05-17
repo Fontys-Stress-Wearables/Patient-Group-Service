@@ -7,4 +7,5 @@ public interface IGenericRepository<T> where T : class
     IEnumerable<T> GetAll();
     T? Add(T entity);
     void Remove(T entity);
+    T Update(T entity);
 }

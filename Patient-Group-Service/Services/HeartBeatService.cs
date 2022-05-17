@@ -6,7 +6,7 @@ public class HeartBeatService : IHostedService, IDisposable
 {
     private readonly INatsService _natsService;
 
-    private Timer _timer;
+    private Timer? _timer;
     private readonly TimeSpan _heartBeatInterval = TimeSpan.FromSeconds(30);
     
     public HeartBeatService(INatsService natsService)
@@ -27,13 +27,14 @@ public class HeartBeatService : IHostedService, IDisposable
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _timer.Change(Timeout.Infinite, 0);
+        _timer?.Change(Timeout.Infinite, 0);
 
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _timer.Dispose();
+        _timer?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

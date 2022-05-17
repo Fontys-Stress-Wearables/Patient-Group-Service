@@ -3,9 +3,7 @@ using Patient_Group_Service.Dtos;
 using Patient_Group_Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
-using Microsoft.Graph;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.Resource;
 
 namespace Patient_Group_Service.Controllers;
 
@@ -13,29 +11,19 @@ namespace Patient_Group_Service.Controllers;
 [Route("patient-groups")]
 public class PatientGroupController : ControllerBase
 {
-    private readonly ILogger<PatientGroupController> _logger;
     private readonly IPatientGroupService _patientGroupService;
-    private readonly IPatientService _patientService;
-    private readonly ICaregiverService _caregiverService;
     private readonly IMapper _mapper;
     
-    public PatientGroupController
-    (
-        ILogger<PatientGroupController> logger, IPatientGroupService patientGroupService, 
-        IPatientService patientService, ICaregiverService caregiverService, IMapper mapper)
+    public PatientGroupController(IPatientGroupService patientGroupService, IMapper mapper)
     {
-        _logger = logger;
         _patientGroupService = patientGroupService;
-        _patientService = patientService;
-        _caregiverService = caregiverService;
         _mapper = mapper;
     }
 
-    [Authorize]
     [HttpGet]
     public IEnumerable<PatientGroupDTO> GetPatientGroups()
     {
-        var groups = _patientGroupService.GetAll();
+        var groups = _patientGroupService.GetAll(HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
@@ -44,7 +32,7 @@ public class PatientGroupController : ControllerBase
     public PatientGroupDTO GetPatientGroupById(string id)
     {
         
-        var group = _patientGroupService.Get(id);
+        var group = _patientGroupService.Get(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map <PatientGroupDTO>(group);
     }
@@ -52,19 +40,19 @@ public class PatientGroupController : ControllerBase
     [HttpPost("{id}/patients")]
     public void PostPatientToPatientGroup(string id, [FromBody] string patientId)
     {
-        _patientGroupService.AddPatient(id, patientId);
+        _patientGroupService.AddPatient(id, patientId,HttpContext.User.GetTenantId()!);
     }
     [Authorize("p-organization-admin")]
     [HttpPost("{id}/caregivers")]
     public async Task PostCaregiverToPatientGroup(string id, [FromBody] string caregiverId)
     {
-        await _patientGroupService.AddCaregiver(id, caregiverId);
+        await _patientGroupService.AddCaregiver(id, caregiverId, HttpContext.User.GetTenantId()!);
     }
 
     [HttpGet("{id}/caregivers")]
     public IEnumerable<CaregiverDTO> GetCaregiversByPatientGroup(string id)
     {
-        var caregivers = _patientGroupService.GetCaregivers(id);
+        var caregivers = _patientGroupService.GetCaregivers(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<CaregiverDTO>>(caregivers);
     }
@@ -72,7 +60,7 @@ public class PatientGroupController : ControllerBase
     [HttpGet("{id}/patients")]
     public IEnumerable<PatientDTO> GetPatients(string id)
     {
-        var patients = _patientGroupService.GetPatients(id);
+        var patients = _patientGroupService.GetPatients(id,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<IEnumerable<PatientDTO>>(patients);
     }
@@ -81,22 +69,38 @@ public class PatientGroupController : ControllerBase
     [HttpPost]
     public PatientGroupDTO PostPatientGroup(CreatePatientGroupDTO patientGroup)
     {
-        var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description);
+        var newGroup = _patientGroupService.Create(patientGroup.GroupName, patientGroup.Description,HttpContext.User.GetTenantId()!);
 
         return _mapper.Map<PatientGroupDTO>(newGroup);
+    }
+    
+    [Authorize("p-organization-admin")]
+    [HttpPut("{id}")]
+    public PatientGroupDTO UpdatePatientGroup(string id, [FromBody] UpdatePatientGroupDTO patientGroup)
+    {
+        var updatedGroup = _patientGroupService.Update(id, patientGroup.GroupName, patientGroup.Description,HttpContext.User.GetTenantId()!);
+
+        return _mapper.Map<PatientGroupDTO>(updatedGroup);
     }
 
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}/patient")]
-    public void RemovePatientFromPatientGroup(string id, [FromBody] string caregiverId)
+    public void RemovePatientFromPatientGroup(string id, [FromBody] string patientId)
     {
-        _patientGroupService.RemovePatientFromPatientGroup(id, caregiverId);
+        _patientGroupService.RemovePatient(id, patientId,HttpContext.User.GetTenantId()!);
+    }
+    
+    [Authorize("p-organization-admin")]
+    [HttpDelete("{id}/caregiver")]
+    public async Task RemoveCaregiverFromPatientGroup(string id, [FromBody] string caregiverId)
+    {
+        await _patientGroupService.RemoveCaregiver(id, caregiverId,HttpContext.User.GetTenantId()!);
     }
     
     [Authorize("p-organization-admin")]
     [HttpDelete("{id}")]
     public void DeletePatientGroup(string id)
     {
-        _patientGroupService.DeletePatientgroup(id);
+        _patientGroupService.Delete(id,HttpContext.User.GetTenantId()!);
     }
 }

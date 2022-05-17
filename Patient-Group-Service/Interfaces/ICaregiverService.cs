@@ -1,10 +1,10 @@
 ﻿using Patient_Group_Service.Models;
 
-namespace Patient_Group_Service.Interfaces
+namespace Patient_Group_Service.Interfaces;
+
+public interface ICaregiverService
 {
-    public interface ICaregiverService
-    {
-        public void Create(string id);
-        public Caregiver Get(string id);
-    }
+    public Task<Caregiver> Get(string id, string tenantId);
+
+    public Task<ICollection<Caregiver>> FetchFromGraph(string tenantId);
 }

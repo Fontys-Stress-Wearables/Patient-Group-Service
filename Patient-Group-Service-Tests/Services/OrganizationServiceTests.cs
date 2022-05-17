@@ -14,9 +14,9 @@ public class OrganizationServiceTests
     {
         var org = new Organization()
         {
-            id="69"
+            Id="69"
         };
-        _unitOfWorkMock.Setup(x => x.Organizations.GetById(org.id)).Returns(org);
+        _unitOfWorkMock.Setup(x => x.Organizations.GetById(org.Id)).Returns(org);
     }
     
     [Fact]
