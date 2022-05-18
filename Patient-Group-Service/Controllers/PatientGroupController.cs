@@ -28,6 +28,20 @@ public class PatientGroupController : ControllerBase
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
     
+    [HttpGet("caregivers/{id}")]
+    public async Task<IEnumerable<PatientGroupDTO>> GetCaregiversGroups(string id)
+    {
+        var groups = await _patientGroupService.GetForCaregiver(id,HttpContext.User.GetTenantId()!);
+        return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
+    }
+    
+    [HttpGet("patients/{id}")]
+    public IEnumerable<PatientGroupDTO> GetPatientsGroups(string id)
+    {
+        var groups = _patientGroupService.GetForPatient(id,HttpContext.User.GetTenantId()!);
+        return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
+    }
+    
     [HttpGet("{id}")]
     public PatientGroupDTO GetPatientGroupById(string id)
     {
