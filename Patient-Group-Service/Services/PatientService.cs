@@ -23,9 +23,9 @@ public class PatientService : IPatientService
         
         patient.Organization = org;
         
-        var p = _unitOfWork.Patients.Update(patient);
+        var update = _unitOfWork.Patients.Update(patient);
             
-        if(p == null)
+        if(update == null)
         {
             throw new CouldNotCreateException($"Could not update patient with id '{patient.Id}'.");
         }
@@ -44,9 +44,9 @@ public class PatientService : IPatientService
         
         patient.Organization = org;
         
-        var p = _unitOfWork.Patients.Add(patient);
+        var added = _unitOfWork.Patients.Add(patient);
             
-        if(p == null)
+        if(added == null)
         {
             throw new CouldNotCreateException($"Could not create patient with id '{patient.Id}'.");
         }
