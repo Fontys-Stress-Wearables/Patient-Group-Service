@@ -68,7 +68,7 @@ public class PatientGroupService : IPatientGroupService
             throw new NotFoundException($"Organization with id '{tenantId}' doesn't exist.");
         }
 
-        var pg = new PatientGroup
+        var patientGroup = new PatientGroup
         {
             Id = Guid.NewGuid().ToString(),
             GroupName = name,
@@ -76,13 +76,13 @@ public class PatientGroupService : IPatientGroupService
             Organization = org
         };
 
-        _unitOfWork.PatientGroups.Add(pg);
+        _unitOfWork.PatientGroups.Add(patientGroup);
 
-        _natsService.Publish("patient-group-created", new PatientGroupCreatedEvent{GroupId = pg.Id, Name = pg.GroupName, Description = pg.Description, OrganizationId = tenantId});
+        _natsService.Publish("patient-group-created", new PatientGroupCreatedEvent{GroupId = patientGroup.Id, Name = patientGroup.GroupName, Description = patientGroup.Description, OrganizationId = tenantId});
 
         _unitOfWork.Complete();
 
-        return pg;
+        return patientGroup;
     }
 
     public async Task<IEnumerable<PatientGroup>> GetForCaregiver(string caregiverId, string tenantId)

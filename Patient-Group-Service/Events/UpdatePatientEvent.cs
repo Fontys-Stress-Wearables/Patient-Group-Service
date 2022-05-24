@@ -1,6 +1,6 @@
 ﻿namespace Patient_Group_Service.Events;
 
-public class CreatePatientEvent
+public class UpdatePatientEvent
 {
     public string Id { get; set; }
     public string FirstName { get; set; }

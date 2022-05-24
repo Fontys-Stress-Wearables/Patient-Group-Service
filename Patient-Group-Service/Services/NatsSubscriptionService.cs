@@ -18,6 +18,7 @@ public class NatsSubscriptionService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _natsService.Subscribe<CreatePatientEvent>("patient-created", OnPatientCreated);
+        _natsService.Subscribe<UpdatePatientEvent>("patient-updated", OnPatientUpdated);
         
         _natsService.Subscribe<Organization>("organization-created", OnOrganizationCreated);
         _natsService.Subscribe<Organization>("organization-removed", OnOrganizationRemoved);
@@ -59,7 +60,27 @@ public class NatsSubscriptionService : BackgroundService
         {
             Id = message.message.Id,
             FirstName = message.message.FirstName,
-            LastName = message.message.LastName
+            LastName = message.message.LastName,
+            Birthdate = message.message.Birthdate,
+            IsActive = message.message.IsActive,
+        }, message.message.Tenant);
+    }
+
+    private void OnPatientUpdated(NatsMessage<UpdatePatientEvent> message)
+    {
+        using var scope = _services.CreateScope();
+        
+        var scopedPatientService = 
+            scope.ServiceProvider
+                .GetRequiredService<IPatientService>();
+        
+        scopedPatientService.Update(new Patient
+        {
+            Id = message.message.Id,
+            FirstName = message.message.FirstName,
+            LastName = message.message.LastName,
+            Birthdate = message.message.Birthdate,
+            IsActive = message.message.IsActive,
         }, message.message.Tenant);
     }
 }
