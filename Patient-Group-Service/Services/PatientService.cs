@@ -12,6 +12,27 @@ public class PatientService : IPatientService
         _unitOfWork = unitOfWork;
     }
 
+    public void Update(Patient patient, string tenantId)
+    {
+        var org = _unitOfWork.Organizations.GetById(tenantId);
+        
+        if (org == null)
+        {
+            throw new NotFoundException($"Organization with id '{tenantId}' doesn't exist.");
+        }
+        
+        patient.Organization = org;
+        
+        var p = _unitOfWork.Patients.Update(patient);
+            
+        if(p == null)
+        {
+            throw new CouldNotCreateException($"Could not update patient with id '{patient.Id}'.");
+        }
+            
+        _unitOfWork.Complete();
+    }
+
     public void Create(Patient patient, string tenantId)
     {
         var org = _unitOfWork.Organizations.GetById(tenantId);
