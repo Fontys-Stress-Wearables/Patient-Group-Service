@@ -9,6 +9,7 @@ public class Patient
     public string LastName { get; set; } = "";
     public DateTime Birthdate { get; set; }
     public bool IsActive { get; set; } = false;
+    public string? ProfileImageUrl { get; set; } = "";
     public virtual ICollection<PatientGroupPatient> PatientGroupPatients { get; set; } = new List<PatientGroupPatient>();
     public virtual Organization Organization { get; set; }
 }
