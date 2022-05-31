@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Patient_Group_Service.Events;
 using Patient_Group_Service.Exceptions;
 using Patient_Group_Service.Interfaces;
 using Patient_Group_Service.Models;
@@ -17,6 +18,8 @@ public class PatientGroupServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<INatsService> _natsService = new();
+    private readonly Mock<IPatientService> _patientService = new();
+    private readonly Mock<ICaregiverService> _caregiverService = new();
 
     public PatientGroupServiceTests()
     {
@@ -34,7 +37,7 @@ public class PatientGroupServiceTests
     public void Get_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -43,13 +46,18 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns(patientGroup);
 
         // Act
-        var result = patientGroupService.Get(patientGroup.Id);
+        var result = patientGroupService.Get(patientGroup.Id, organization.Id);
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
 
         Assert.Equal(patientGroup, result);
     }
@@ -58,7 +66,7 @@ public class PatientGroupServiceTests
     public void Get_NotFoundException()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -67,15 +75,20 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns((PatientGroup?)null);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns((PatientGroup?)null);
 
         // Act
         var result = Assert.Throws<NotFoundException>(() =>
-            patientGroupService.Get(patientGroup.Id)
+            patientGroupService.Get(patientGroup.Id, organization.Id)
         );
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
 
         Assert.Equal($"Patient group with id '{patientGroup.Id}' doesn't exist.", result.Message);
     }
@@ -84,7 +97,7 @@ public class PatientGroupServiceTests
     public void Create_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -93,24 +106,30 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+
+        _unitOfWork.Setup(x => x.Organizations.GetById(organization.Id)).Returns(organization);
+
         // Act
-        var newPatientGroup = patientGroupService.Create(patientGroup.GroupName, patientGroup.Description);
+        var newPatientGroup = patientGroupService.Create(patientGroup.GroupName, patientGroup.Description, organization.Id);
 
         // Assert
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
 
-        _natsService.Verify(x => x.Publish("patient-group-created", newPatientGroup), Times.Once);
-
         Assert.Equal("group1", patientGroup.GroupName);
         Assert.Equal("description", patientGroup.Description);
-
+        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
     public void Create_ThrowsBadRequestException()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -119,15 +138,17 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
+        var tenantId = "tenant";
+
         // Act
         var result = Assert.Throws<BadRequestException>(() =>
-            patientGroupService.Create(patientGroup.GroupName, patientGroup.Description)
+            patientGroupService.Create(patientGroup.GroupName, patientGroup.Description, tenantId)
         );
 
         // Assert
         _unitOfWork.Verify(x => x.Complete(), Times.Never);
 
-        Assert.Empty(_natsService.Invocations);
+        Assert.Empty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
 
         Assert.Equal($"Name cannot be empty.", result.Message);
     }
@@ -136,7 +157,7 @@ public class PatientGroupServiceTests
     public void AddPatient_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -152,28 +173,33 @@ public class PatientGroupServiceTests
             LastName = "lastname"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
-        _unitOfWork.Setup(x => x.Patients.GetById(patient.Id)).Returns(patient);
+        var organization = new Organization
+        {
+            Id = "tenant",
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns(patientGroup);
+        _patientService.Setup(x => x.Get(patient.Id, organization.Id)).Returns(patient);
 
         // Act
-        patientGroupService.AddPatient(patientGroup.Id, patient.Id);
+        patientGroupService.AddPatient(patientGroup.Id, patient.Id, organization.Id);
 
         // Assert
         _unitOfWork.Verify(x => x.PatientGroups.AddPatient(patientGroup, patient), Times.Once);
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Patients.GetById(patient.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
+        _patientService.Verify(x => x.Get(patient.Id, organization.Id), Times.Once);
+
+        _unitOfWork.Verify(x => x.PatientGroups.AddPatient(patientGroup, patient));
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
 
-        // Moq verify doesn't seem to work with anonymous types
-        // For now this seems like the easiest way to check whether the a method on the NATS service has been called
-        Assert.Single(_natsService.Invocations);
+        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
     public void AddPatient_ThrowsNotFoundException()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -187,61 +213,29 @@ public class PatientGroupServiceTests
             Id = "test-id",
             FirstName = "firstname",
             LastName = "lastname"
+        };
+
+        var organization = new Organization
+        {
+            Id = "tenant"
         };
 
         // Act
         var result = Assert.Throws<NotFoundException>(() =>
-            patientGroupService.AddPatient(patientGroup.Id, patient.Id)
+            patientGroupService.AddPatient(patientGroup.Id, patient.Id, organization.Id)
         );
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
 
-        Assert.Empty(_natsService.Invocations);
+        Assert.Empty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
-    public void AddPatient_ThrowsBadRequestException()
+    public async Task AddCaregiver_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
-
-        var patientGroup = new PatientGroup
-        {
-            Id = "test-id",
-            GroupName = "group1",
-            Description = "description"
-        };
-
-        var patient = new Patient
-        {
-            Id = "test-id",
-            FirstName = "firstname",
-            LastName = "lastname"
-        };
-
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
-
-        // Act
-        var result = Assert.Throws<BadRequestException>(() =>
-            patientGroupService.AddPatient(patientGroup.Id, patient.Id)
-        );
-
-        // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Patients.GetById(patient.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Complete(), Times.Never);
-
-        Assert.Empty(_natsService.Invocations);
-
-        Assert.Equal($"Patient with id '{patient.Id}' doesn't exist.", result.Message);
-    }
-
-    [Fact]
-    public void AddCaregiver_ShouldSucceed()
-    {
-        // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -253,28 +247,34 @@ public class PatientGroupServiceTests
         var caregiver = new Caregiver
         {
             Id = "test-id",
+            AzureID = "test-id"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
-        _unitOfWork.Setup(x => x.Caregivers.GetById(caregiver.Id)).Returns(caregiver);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns(patientGroup);
+        _caregiverService.Setup(x => x.Get(caregiver.Id, organization.Id)).Returns(Task.FromResult(caregiver));
 
         // Act
-        patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO);
+        await patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, organization.Id);
 
         // Assert
         _unitOfWork.Verify(x => x.PatientGroups.AddCaregiver(patientGroup, caregiver), Times.Once);
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Caregivers.GetById(caregiver.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
+        _caregiverService.Verify(x => x.Get(caregiver.Id, organization.Id), Times.Once);
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
 
-        Assert.Single(_natsService.Invocations);
+        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
-    public void AddCaregiver_ThrowsNotFoundException()
+    public async Task AddCaregiver_ThrowsNotFoundException()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -288,54 +288,24 @@ public class PatientGroupServiceTests
             Id = "test-id",
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
         // Act
-        var result = Assert.Throws<NotFoundException>(() =>
-            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO)
+        var result = await Assert.ThrowsAsync<NotFoundException>(() =>
+            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, organization.Id)
         );
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Caregivers.GetById(caregiver.Id), Times.Never);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
+        _unitOfWork.Verify(x => x.Caregivers.GetByAzureIdAndTenant(caregiver.Id, organization.Id), Times.Never);
         _unitOfWork.Verify(x => x.Complete(), Times.Never);
 
-        Assert.Empty(_natsService.Invocations);
+        Assert.Empty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
 
         Assert.Equal($"Patient group with id '{caregiver.Id}' doesn't exist.", result.Message);
-    }
-
-    [Fact]
-    public void AddCaregiver_ThrowsBadRequestException()
-    {
-        // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
-
-        var patientGroup = new PatientGroup
-        {
-            Id = "test-id",
-            GroupName = "group1",
-            Description = "description"
-        };
-
-        var caregiver = new Caregiver
-        {
-            Id = "test-id",
-        };
-
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
-
-        // Act
-        var result = Assert.Throws<BadRequestException>(() =>
-            patientGroupService.AddCaregiver(patientGroup.Id, caregiver.Id, TODO)
-        );
-
-        // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Caregivers.GetById(caregiver.Id), Times.Once);
-        _unitOfWork.Verify(x => x.Complete(), Times.Never);
-
-        Assert.Empty(_natsService.Invocations);
-
-        Assert.Equal($"Caregiver with id '{caregiver.Id}' doesn't exist.", result.Message);
     }
 
 
@@ -343,7 +313,7 @@ public class PatientGroupServiceTests
     public void GetPatient_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -352,20 +322,25 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns(patientGroup);
 
         // Act
-        patientGroupService.GetPatients(patientGroup.Id);
+        patientGroupService.GetPatients(patientGroup.Id, organization.Id);
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
     }
 
     [Fact]
     public void GetPatient_ThrowsNotFound()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
 
         var patientGroup = new PatientGroup
@@ -375,13 +350,18 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
         // Act
         var result = Assert.Throws<NotFoundException>(() =>
-             patientGroupService.GetPatients(patientGroup.Id)
+             patientGroupService.GetPatients(patientGroup.Id, organization.Id)
         );
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
 
         Assert.Equal($"Patient group with id '{patientGroup.Id}' doesn't exist.", result.Message);
     }
@@ -390,7 +370,7 @@ public class PatientGroupServiceTests
     public void GetCaregiver_ShouldSucceed()
     {
         // Arrange
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
         var patientGroup = new PatientGroup
         {
@@ -399,20 +379,25 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
-        _unitOfWork.Setup(x => x.PatientGroups.GetById(patientGroup.Id)).Returns(patientGroup);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id)).Returns(patientGroup);
 
         // Act
-        patientGroupService.GetCaregivers(patientGroup.Id);
+        patientGroupService.GetCaregivers(patientGroup.Id, organization.Id);
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
     }
 
     [Fact]
     public void GetCaregiver_ThrowsNotFound()
     {
         // Act
-        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object);
+        var patientGroupService = new PatientGroupService(_unitOfWork.Object, _natsService.Object, _caregiverService.Object, _patientService.Object);
 
 
         var patientGroup = new PatientGroup
@@ -422,13 +407,18 @@ public class PatientGroupServiceTests
             Description = "description"
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
         // Act
         var result = Assert.Throws<NotFoundException>(() =>
-             patientGroupService.GetCaregivers(patientGroup.Id)
+             patientGroupService.GetCaregivers(patientGroup.Id, organization.Id)
         );
 
         // Assert
-        _unitOfWork.Verify(x => x.PatientGroups.GetById(patientGroup.Id), Times.Once);
+        _unitOfWork.Verify(x => x.PatientGroups.GetByIdAndTenant(patientGroup.Id, organization.Id), Times.Once);
 
         Assert.Equal($"Patient group with id '{patientGroup.Id}' doesn't exist.", result.Message);
     }
