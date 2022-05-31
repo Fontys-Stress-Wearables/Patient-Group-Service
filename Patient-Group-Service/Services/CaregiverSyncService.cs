@@ -49,7 +49,7 @@ public class CaregiverSyncService : IHostedService, IDisposable
             }
             catch (Exception ex)
             {
-                _natsService.Publish("th_errors", ex.Message);
+                _natsService.Publish("th_errors","", ex.Message);
             }
         }
     }

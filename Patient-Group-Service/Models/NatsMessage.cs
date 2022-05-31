@@ -4,5 +4,6 @@ public class NatsMessage<T>
 {
     public string origin { get; set; } = "patient-group-service";
     public string target { get; set; } = "";
+    public string tenantId { get; set; } = "";
     public T message { get; set; }
 }
