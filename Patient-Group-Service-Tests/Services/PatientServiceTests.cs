@@ -25,11 +25,17 @@ public class PatientServiceTests
             LastName = "test-lastname"
         };
 
-        _unitOfWork.Setup(x => x.Patients.GetById(patient.Id)).Returns(patient);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.Patients.GetByIdAndTenant(patient.Id, organization.Id)).Returns(patient);
         
-        var result = sut.Get(patient.Id);
+        var result = sut.Get(patient.Id, organization.Id);
         
-        _unitOfWork.Verify(x => x.Patients.GetById(patient.Id), Times.Once);
+        _unitOfWork.Verify(x => x.Patients.GetByIdAndTenant(patient.Id, organization.Id), Times.Once);
+
         Assert.Equal(patient, result);
     }
     
@@ -43,14 +49,19 @@ public class PatientServiceTests
             Id = "test-id"
         };
 
-        _unitOfWork.Setup(x => x.Patients.GetById(patient.Id)).Returns((Patient?) null);
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
+        _unitOfWork.Setup(x => x.Patients.GetByIdAndTenant(patient.Id, organization.Id)).Returns((Patient?) null);
         
         var result = Assert.Throws<NotFoundException>(() =>
-            sut.Get(patient.Id)
+            sut.Get(patient.Id, organization.Id)
         );
         
-        _unitOfWork.Verify(x => x.Patients.GetById(patient.Id), Times.Once);
-        Assert.Equal($"Patient with id '{patient.Id}' doesn't exist.", result.Message);
+        _unitOfWork.Verify(x => x.Patients.GetByIdAndTenant(patient.Id, organization.Id), Times.Once);
+        Assert.Equal($"Patient with id '{patient.Id}' not found.", result.Message);
     }
     
     [Fact]
@@ -65,9 +76,15 @@ public class PatientServiceTests
             LastName = "test-lastname"
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
         _unitOfWork.Setup(x => x.Patients.Add(patient)).Returns(patient);
-        
-        sut.Create(patient);
+        _unitOfWork.Setup(x => x.Organizations.GetById(organization.Id)).Returns(organization);
+
+        sut.Create(patient, organization.Id);
         
         _unitOfWork.Verify(x => x.Patients.Add(patient), Times.Once);
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
@@ -85,10 +102,16 @@ public class PatientServiceTests
             LastName = "test-lastname"
         };
 
+        var organization = new Organization
+        {
+            Id = "tenant"
+        };
+
         _unitOfWork.Setup(x => x.Patients.Add(patient)).Returns((Patient?) null);
-        
+        _unitOfWork.Setup(x => x.Organizations.GetById(organization.Id)).Returns(organization);
+
         var result = Assert.Throws<CouldNotCreateException>(() =>
-            sut.Create(patient)
+            sut.Create(patient, organization.Id)
         );        
         
         Assert.Equal($"Could not create patient with id '{patient.Id}'.", result.Message);
