@@ -16,7 +16,7 @@ public class HeartBeatService : IHostedService, IDisposable
 
     private void HeartbeatTimerCallback(object? state)
     {
-        _natsService.Publish("technical_health", "heartbeat");
+        _natsService.Publish("technical_health","","heartbeat");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
