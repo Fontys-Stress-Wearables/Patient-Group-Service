@@ -122,7 +122,7 @@ public class PatientGroupServiceTests
 
         Assert.Equal("group1", patientGroup.GroupName);
         Assert.Equal("description", patientGroup.Description);
-        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
+        Assert.NotEmpty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class PatientGroupServiceTests
         _unitOfWork.Verify(x => x.PatientGroups.AddPatient(patientGroup, patient));
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
 
-        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
+        Assert.NotEmpty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
@@ -267,7 +267,7 @@ public class PatientGroupServiceTests
         _caregiverService.Verify(x => x.Get(caregiver.Id, organization.Id), Times.Once);
         _unitOfWork.Verify(x => x.Complete(), Times.Once);
 
-        Assert.Single(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
+        Assert.NotEmpty(_natsService.Invocations.Where(i => i.Method.Name == "Publish"));
     }
 
     [Fact]
