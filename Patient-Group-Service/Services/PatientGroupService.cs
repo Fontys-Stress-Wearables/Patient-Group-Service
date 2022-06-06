@@ -48,7 +48,7 @@ public class PatientGroupService : IPatientGroupService
         var updated = _unitOfWork.PatientGroups.Update(group);
         
         _natsService.Publish("patient-group-updated", tenantId, new PatientGroupUpdatedEvent{GroupId = updated.Id, Name = updated.GroupName, Description = updated.Description});
-
+        _natsService.Publish("th-logs","", $"Patient-Group updated with ID: '{updated.Id}.'");
         _unitOfWork.Complete();
 
         return updated;
@@ -79,7 +79,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.Add(patientGroup);
 
         _natsService.Publish("patient-group-created", tenantId, new PatientGroupCreatedEvent{GroupId = patientGroup.Id, Name = patientGroup.GroupName, Description = patientGroup.Description, OrganizationId = tenantId});
-
+        _natsService.Publish("th-logs","", $"Patient-Group created with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
 
         return patientGroup;
@@ -109,7 +109,8 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.Remove(group);
         
         _natsService.Publish("patient-group-removed", tenantId, new PatientGroupRemovedEvent{GroupId = id});
-        
+        _natsService.Publish("th-logs","", $"Patient-Group removed with ID: '{id}.'");
+
         _unitOfWork.Complete();
     }
 
@@ -122,7 +123,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
 
         _natsService.Publish("patient-group-patient-added", tenantId,new PatientAddedEvent{GroupId = patientGroupId, PatientId = patientId});
-
+        _natsService.Publish("th-logs","", $"Patient added to the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
@@ -138,7 +139,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.RemovePatient(patientGroupPatient);
         
         _natsService.Publish("patient-group-patient-removed", tenantId, new PatientRemovedEvent{GroupId = patientGroupId, PatientId = patientId});
-
+        _natsService.Publish("th-logs","", $"Patient removed from the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
@@ -151,7 +152,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
 
         _natsService.Publish("patient-group-caregiver-added", tenantId, new CaregiverAddedEvent{GroupId = patientGroupId, CaregiverId = caregiverId});
-
+        _natsService.Publish("th-logs","", $"Caregiver added to the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
     
@@ -169,7 +170,7 @@ public class PatientGroupService : IPatientGroupService
         _unitOfWork.PatientGroups.RemoveCaregiver(patientGroupCaregiver);
         
         _natsService.Publish("patient-group-caregiver-removed", tenantId, new CaregiverRemovedEvent{GroupId = patientGroupId, CaregiverId = caregiverId});
-
+        _natsService.Publish("th-logs","", $"Caregiver removed from the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
