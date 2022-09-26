@@ -15,9 +15,9 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "AZURE_CLIENT_ID": "5720ed34-04b7-4397-9239-9eb8581ce2b7",
-        "AZURE_CLIENT_SECRET": "-Kj8Q~U3YFgAyRVpiVEbgRqCIirL~jSz8VWFkdw2",
-        "AZURE_TENANT_ID": "acdb33d3-0c54-4037-804d-768f633cbb6c"
+        "AZURE_CLIENT_ID": "9c6eb837-6608-43b9-b5cf-6ae74e4dca1d",
+        "AZURE_CLIENT_SECRET": "CW18Q~b6-LJetHChYdn2mIQVdjLL2FN1i_hCEc6p",
+        "AZURE_TENANT_ID": "1358d9d3-b805-4ec3-a0ee-cdd35864e8ba"
       },
       "applicationUrl": "https://localhost:7257;http://localhost:5257",
       "dotnetRunMessages": true
