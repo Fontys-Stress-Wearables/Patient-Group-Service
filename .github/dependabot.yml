@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "nuget"
+  # Enable version updates for nuget 
+  - package-ecosystem: "nuget" 
+  # Look for nuget dependency info from the `root` directory
+    directory: "/" 
+    # Check the nuget registry for updates weekly 
+    schedule:
+      interval: "weekly"
