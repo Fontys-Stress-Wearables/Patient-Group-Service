@@ -1,7 +1,13 @@
-name: Pull Request
-on: [ pull_request ]
+name: ci-cd-flow
 
-env:
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+    
+env: 
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}  
   DOTNET_VERSION: '6.0.402'
 
 jobs:
