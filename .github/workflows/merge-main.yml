@@ -42,10 +42,35 @@ jobs:
       with:
         name: patient-group-cicd-artifact
         path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
+        
+  run-linters:
+    name: Run linters
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download workflow data
+        uses: actions/download-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          dotnet_format: true
+          
+      - name: Persist workflow data as artifact for Linting
+        uses: actions/upload-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
 
   analyse:
     name: Unit Tests
-    needs: [ build ]
+    needs: [ run-linters ]
     runs-on: ubuntu-latest
     
     steps:
@@ -54,12 +79,18 @@ jobs:
       - name: Download workflow data
         uses: actions/download-artifact@v3
         with:
-          name: patient-group-cicd-artifact
+          name: patient-group-artifact
           path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
       
       - name: Test
         run: dotnet test --no-restore --verbosity normal
         working-directory: Patient-Group-Service-Tests
+          
+      - name: Persist workflow data as artifact for Testing
+        uses: actions/upload-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
   
   codeQL-analyse:
     name: CodeQL-Analyse
