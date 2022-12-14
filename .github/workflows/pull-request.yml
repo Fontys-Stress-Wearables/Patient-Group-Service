@@ -82,7 +82,7 @@ jobs:
 
   analyse:
     name: Unit Tests
-    needs: [ run-linters ]
+    needs: [ build, run-linters ]
     runs-on: ubuntu-latest
     
     steps:
