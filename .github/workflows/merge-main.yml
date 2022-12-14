@@ -2,7 +2,7 @@ name: ci-cd-flow
 
 on:
   push:
-    branches: [main, github-actions]
+    branches: [main]
     tags: ['v*.*.*']
     
 env: 
