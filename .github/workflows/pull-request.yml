@@ -42,14 +42,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out Git repository
       - uses: actions/checkout@v3
-#         uses: actions/checkout@v2
-
-#       - name: Set up .NET
-# #         uses: actions/setup-dotnet@v1
-#         with:
-#           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Download workflow data
         uses: actions/download-artifact@v3
@@ -68,7 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Check out Git repository
       - uses: actions/checkout@v3
 
       - name: Download workflow data
