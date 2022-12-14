@@ -54,6 +54,12 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           dotnet_format: true
+          
+      - name: Persist workflow data as artifact for Linting
+        uses: actions/upload-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
 
   analyse:
     name: Unit Tests
@@ -72,6 +78,12 @@ jobs:
       - name: Test
         run: dotnet test --no-restore --verbosity normal
         working-directory: Patient-Group-Service-Tests
+          
+      - name: Persist workflow data as artifact for Testing
+        uses: actions/upload-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
   
   codeQL-analyse:
     name: CodeQL-Analyse
