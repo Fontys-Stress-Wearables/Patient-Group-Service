@@ -60,6 +60,7 @@ jobs:
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:
+          auto_fix: true
           dotnet_format: true
           
       - name: Persist workflow data as artifact for Linting
