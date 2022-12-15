@@ -8,7 +8,7 @@ public class HeartBeatService : IHostedService, IDisposable
 
     private Timer? _timer;
     private readonly TimeSpan _heartBeatInterval = TimeSpan.FromSeconds(30);
-    
+
     public HeartBeatService(INatsService natsService)
     {
         _natsService = natsService;
@@ -16,7 +16,7 @@ public class HeartBeatService : IHostedService, IDisposable
 
     private void HeartbeatTimerCallback(object? state)
     {
-        _natsService.Publish("technical_health","","heartbeat");
+        _natsService.Publish("technical_health", "", "heartbeat");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)

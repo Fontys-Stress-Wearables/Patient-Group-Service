@@ -14,17 +14,17 @@ public class PatientController : ControllerBase
 {
     private readonly IPatientGroupService _patientGroupService;
     private readonly IMapper _mapper;
-    
+
     public PatientController(IPatientGroupService patientGroupService, IMapper mapper)
     {
         _patientGroupService = patientGroupService;
         _mapper = mapper;
     }
-    
+
     [HttpGet("{id}/patient-groups")]
     public IEnumerable<PatientGroupDTO> GetPatientsGroups(string id)
     {
-        var groups = _patientGroupService.GetForPatient(id,HttpContext.User.GetTenantId()!);
+        var groups = _patientGroupService.GetForPatient(id, HttpContext.User.GetTenantId()!);
         return _mapper.Map<IEnumerable<PatientGroupDTO>>(groups);
     }
 }

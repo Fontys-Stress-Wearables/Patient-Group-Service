@@ -24,6 +24,6 @@ public interface IPatientGroupService
     public IEnumerable<Caregiver> GetCaregivers(string id, string tenantId);
     public Task<IEnumerable<PatientGroup>> GetForCaregiver(string caregiverId, string tenantId);
     public void Delete(string id, string tenantId);
-        
+
 
 }

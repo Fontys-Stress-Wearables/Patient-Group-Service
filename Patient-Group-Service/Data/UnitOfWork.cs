@@ -2,7 +2,7 @@
 
 namespace Patient_Group_Service.Data;
 
-public class UnitOfWork: IUnitOfWork
+public class UnitOfWork : IUnitOfWork
 {
     private readonly DatabaseContext _context;
 

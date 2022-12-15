@@ -14,18 +14,18 @@ public class OrganizationServiceTests
     {
         var org = new Organization()
         {
-            Id="69"
+            Id = "69"
         };
         _unitOfWorkMock.Setup(x => x.Organizations.GetById(org.Id)).Returns(org);
     }
-    
+
     [Fact]
     public void OrganizationsExistsShouldSucceed()
     {
         IOrganizationService service = new OrganizationService(_unitOfWorkMock.Object);
         Assert.True(service.Exists("69"));
     }
-    
+
     [Fact]
     public void OrganizationsExistsShouldFail()
     {

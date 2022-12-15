@@ -30,7 +30,7 @@ public class NatsService : INatsService
 
     public void Publish<T>(string target, string tenantId, T data)
     {
-        var message = new NatsMessage<T>{target = target, tenantId = tenantId, message = data};
+        var message = new NatsMessage<T> { target = target, tenantId = tenantId, message = data };
         _connection?.Publish(target, tenantId, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
     }
 

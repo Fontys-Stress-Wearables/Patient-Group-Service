@@ -44,11 +44,11 @@ public class PatientGroupService : IPatientGroupService
 
         if (name != null) group.GroupName = name;
         if (description != null) group.Description = description;
-        
+
         var updated = _unitOfWork.PatientGroups.Update(group);
-        
-        _natsService.Publish("patient-group-updated", tenantId, new PatientGroupUpdatedEvent{GroupId = updated.Id, Name = updated.GroupName, Description = updated.Description});
-        _natsService.Publish("th-logs","", $"Patient-Group updated with ID: '{updated.Id}.'");
+
+        _natsService.Publish("patient-group-updated", tenantId, new PatientGroupUpdatedEvent { GroupId = updated.Id, Name = updated.GroupName, Description = updated.Description });
+        _natsService.Publish("th-logs", "", $"Patient-Group updated with ID: '{updated.Id}.'");
         _unitOfWork.Complete();
 
         return updated;
@@ -62,7 +62,7 @@ public class PatientGroupService : IPatientGroupService
         }
 
         var org = _unitOfWork.Organizations.GetById(tenantId);
-        
+
         if (org == null)
         {
             throw new NotFoundException($"Organization with id '{tenantId}' doesn't exist.");
@@ -78,8 +78,8 @@ public class PatientGroupService : IPatientGroupService
 
         _unitOfWork.PatientGroups.Add(patientGroup);
 
-        _natsService.Publish("patient-group-created", tenantId, new PatientGroupCreatedEvent{GroupId = patientGroup.Id, Name = patientGroup.GroupName, Description = patientGroup.Description, OrganizationId = tenantId});
-        _natsService.Publish("th-logs","", $"Patient-Group created with ID: '{patientGroup.Id}.'");
+        _natsService.Publish("patient-group-created", tenantId, new PatientGroupCreatedEvent { GroupId = patientGroup.Id, Name = patientGroup.GroupName, Description = patientGroup.Description, OrganizationId = tenantId });
+        _natsService.Publish("th-logs", "", $"Patient-Group created with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
 
         return patientGroup;
@@ -88,8 +88,8 @@ public class PatientGroupService : IPatientGroupService
     public async Task<IEnumerable<PatientGroup>> GetForCaregiver(string caregiverId, string tenantId)
     {
         var caregiver = await _caregiverService.Get(caregiverId, tenantId);
-        
-        if(caregiver == null)
+
+        if (caregiver == null)
         {
             throw new NotFoundException($"Caregiver with id '{caregiverId}' doesn't exist.");
         }
@@ -107,9 +107,9 @@ public class PatientGroupService : IPatientGroupService
         }
 
         _unitOfWork.PatientGroups.Remove(group);
-        
-        _natsService.Publish("patient-group-removed", tenantId, new PatientGroupRemovedEvent{GroupId = id});
-        _natsService.Publish("th-logs","", $"Patient-Group removed with ID: '{id}.'");
+
+        _natsService.Publish("patient-group-removed", tenantId, new PatientGroupRemovedEvent { GroupId = id });
+        _natsService.Publish("th-logs", "", $"Patient-Group removed with ID: '{id}.'");
 
         _unitOfWork.Complete();
     }
@@ -117,13 +117,13 @@ public class PatientGroupService : IPatientGroupService
     public void AddPatient(string patientGroupId, string patientId, string tenantId)
     {
         var patientGroup = Get(patientGroupId, tenantId);
-        
+
         var patient = _patientService.Get(patientId, tenantId);
 
         _unitOfWork.PatientGroups.AddPatient(patientGroup, patient);
 
-        _natsService.Publish("patient-group-patient-added", tenantId,new PatientAddedEvent{GroupId = patientGroupId, PatientId = patientId});
-        _natsService.Publish("th-logs","", $"Patient added to the Patient-Group with ID: '{patientGroup.Id}.'");
+        _natsService.Publish("patient-group-patient-added", tenantId, new PatientAddedEvent { GroupId = patientGroupId, PatientId = patientId });
+        _natsService.Publish("th-logs", "", $"Patient added to the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
@@ -137,9 +137,9 @@ public class PatientGroupService : IPatientGroupService
             throw new BadRequestException($"Patient with id '{patientId}' could not be removed from patient group with id:'{patientGroupId}'.");
         }
         _unitOfWork.PatientGroups.RemovePatient(patientGroupPatient);
-        
-        _natsService.Publish("patient-group-patient-removed", tenantId, new PatientRemovedEvent{GroupId = patientGroupId, PatientId = patientId});
-        _natsService.Publish("th-logs","", $"Patient removed from the Patient-Group with ID: '{patientGroup.Id}.'");
+
+        _natsService.Publish("patient-group-patient-removed", tenantId, new PatientRemovedEvent { GroupId = patientGroupId, PatientId = patientId });
+        _natsService.Publish("th-logs", "", $"Patient removed from the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
@@ -151,15 +151,15 @@ public class PatientGroupService : IPatientGroupService
 
         _unitOfWork.PatientGroups.AddCaregiver(patientGroup, caregiver);
 
-        _natsService.Publish("patient-group-caregiver-added", tenantId, new CaregiverAddedEvent{GroupId = patientGroupId, CaregiverId = caregiverId});
-        _natsService.Publish("th-logs","", $"Caregiver added to the Patient-Group with ID: '{patientGroup.Id}.'");
+        _natsService.Publish("patient-group-caregiver-added", tenantId, new CaregiverAddedEvent { GroupId = patientGroupId, CaregiverId = caregiverId });
+        _natsService.Publish("th-logs", "", $"Caregiver added to the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
-    
+
     public async Task RemoveCaregiver(string patientGroupId, string caregiverId, string tenantId)
     {
         var caregiver = await _caregiverService.Get(caregiverId, tenantId);
-        
+
         var patientGroup = Get(patientGroupId, tenantId);
 
         var patientGroupCaregiver = _unitOfWork.PatientGroups.GetPatientGroupCaregiver(patientGroup, caregiver.Id);
@@ -168,9 +168,9 @@ public class PatientGroupService : IPatientGroupService
             throw new BadRequestException($"Caregiver with id '{caregiverId}' could not be removed from patient group with id:'{patientGroupId}'.");
         }
         _unitOfWork.PatientGroups.RemoveCaregiver(patientGroupCaregiver);
-        
-        _natsService.Publish("patient-group-caregiver-removed", tenantId, new CaregiverRemovedEvent{GroupId = patientGroupId, CaregiverId = caregiverId});
-        _natsService.Publish("th-logs","", $"Caregiver removed from the Patient-Group with ID: '{patientGroup.Id}.'");
+
+        _natsService.Publish("patient-group-caregiver-removed", tenantId, new CaregiverRemovedEvent { GroupId = patientGroupId, CaregiverId = caregiverId });
+        _natsService.Publish("th-logs", "", $"Caregiver removed from the Patient-Group with ID: '{patientGroup.Id}.'");
         _unitOfWork.Complete();
     }
 
@@ -188,7 +188,7 @@ public class PatientGroupService : IPatientGroupService
     public IEnumerable<PatientGroup> GetForPatient(string patientId, string tenantId)
     {
         var patient = _patientService.Get(patientId, tenantId);
-        
+
         return patient.PatientGroupPatients.Select(pg => pg.PatientGroup);
     }
 

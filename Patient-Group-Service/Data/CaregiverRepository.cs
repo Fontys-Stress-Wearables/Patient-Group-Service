@@ -33,7 +33,7 @@ public class CaregiverRepository : GenericRepository<Caregiver>, ICaregiverRepos
         foreach (var caregiver in caregivers)
         {
             caregiver.Active = true;
-                
+
             if (!current.Select(x => x.AzureID).Contains(caregiver.AzureID))
             {
                 caregiver.Id = Guid.NewGuid().ToString();
@@ -43,9 +43,9 @@ public class CaregiverRepository : GenericRepository<Caregiver>, ICaregiverRepos
             else
             {
                 var currentCaregiver = current.First(x => x.AzureID == caregiver.AzureID);
-                    
+
                 if (currentCaregiver.Active == caregiver.Active) continue;
-                    
+
                 currentCaregiver.Active = caregiver.Active;
                 _context.Entry(currentCaregiver).State = EntityState.Modified;
             }
