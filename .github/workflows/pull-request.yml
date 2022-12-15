@@ -36,54 +36,55 @@ jobs:
         name: patient-group-artifact
         path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
         
-#   run-linters:
-#     name: Run linters
-#     needs: [ build ]
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - uses: actions/checkout@v3
-
-#       - name: Download workflow data
-#         uses: actions/download-artifact@v3
-#         with:
-#           name: patient-group-artifact
-#           path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
-
-#       - name: Run linters
-#         uses: wearerequired/lint-action@v2
-#         with:
-#           dotnet_format: true
-          
-#       - name: Persist workflow data as artifact for Linting
-#         uses: actions/upload-artifact@v3
-#         with:
-#           name: patient-group-artifact
-#           path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
-
-
   run-linters:
     name: Run linters
+    needs: [ build ]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v1
+      - name: Download workflow data
+        uses: actions/download-artifact@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:
           auto_fix: true
           dotnet_format: true
+          
+      - name: Persist workflow data as artifact for Linting
+        uses: actions/upload-artifact@v3
+        with:
+          name: patient-group-artifact
+          path: /home/runner/work/Patient-Group-Service/Patient-Group-Service/release/
+
+
+#   run-linters:
+#     name: Run linters
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Check out Git repository
+#         uses: actions/checkout@v2
+
+#       - name: Set up .NET
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+#       - name: Run linters
+#         uses: wearerequired/lint-action@v2
+#         with:
+#           auto_fix: true
+#           dotnet_format: true
 
   analyse:
     name: Unit Tests
-    needs: [ build, run-linters ]
+    needs: [ run-linters ]
     runs-on: ubuntu-latest
     
     steps:
