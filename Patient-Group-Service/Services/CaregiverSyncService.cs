@@ -6,15 +6,15 @@ public class CaregiverSyncService : IHostedService, IDisposable
 {
     private readonly INatsService _natsService;
     private readonly IServiceProvider _serviceProvider;
-    
+
     private Timer _timer = null!;
-    
+
     public CaregiverSyncService(INatsService natsService, IServiceProvider serviceProvider)
     {
         _natsService = natsService;
         _serviceProvider = serviceProvider;
     }
-    
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _timer = new Timer(SyncCaregivers, null, 1000, 100000);
@@ -26,7 +26,7 @@ public class CaregiverSyncService : IHostedService, IDisposable
         _timer.Change(Timeout.Infinite, 0);
         return Task.CompletedTask;
     }
-    
+
     private void SyncCaregivers(object? state)
     {
         _ = DoSyncCaregivers();
@@ -35,12 +35,12 @@ public class CaregiverSyncService : IHostedService, IDisposable
     private async Task DoSyncCaregivers()
     {
         using var scope = _serviceProvider.CreateScope();
-        var scopedOrganizationService = 
+        var scopedOrganizationService =
             scope.ServiceProvider
                 .GetRequiredService<IOrganizationService>();
 
         var organizations = scopedOrganizationService.GetAll();
-        
+
         foreach (var organization in organizations)
         {
             try
@@ -49,7 +49,7 @@ public class CaregiverSyncService : IHostedService, IDisposable
             }
             catch (Exception ex)
             {
-                _natsService.Publish("th_errors","", ex.Message);
+                _natsService.Publish("th_errors", "", ex.Message);
             }
         }
     }
@@ -57,7 +57,7 @@ public class CaregiverSyncService : IHostedService, IDisposable
     private async Task FetchCaregivers(string tenantId)
     {
         using var scope = _serviceProvider.CreateScope();
-        var scopedCaregiverService = 
+        var scopedCaregiverService =
             scope.ServiceProvider
                 .GetRequiredService<ICaregiverService>();
 

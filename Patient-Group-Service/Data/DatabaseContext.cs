@@ -28,15 +28,15 @@ public class DatabaseContext : DbContext
             .HasForeignKey(t => t.CaregiverId);
         modelBuilder.Entity<PatientGroupCaregiver>().HasOne(t => t.PatientGroup).WithMany(t => t.PatientGroupCaregivers)
             .HasForeignKey(t => t.PatientGroupId);
-        
+
         modelBuilder.Entity<Caregiver>()
             .HasOne(p => p.Organization)
             .WithMany(b => b.Caregivers);
-        
+
         modelBuilder.Entity<PatientGroup>()
             .HasOne(p => p.Organization)
             .WithMany(b => b.PatientGroups);
-        
+
         modelBuilder.Entity<Patient>()
             .HasOne(p => p.Organization)
             .WithMany(b => b.Patients);

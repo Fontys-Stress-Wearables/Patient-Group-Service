@@ -6,7 +6,7 @@ namespace Patient_Group_Service.Data;
 
 public class PatientRepository : GenericRepository<Patient>, IPatientRepository
 {
-    public PatientRepository(DatabaseContext context): base(context)
+    public PatientRepository(DatabaseContext context) : base(context)
     {
 
     }
@@ -14,6 +14,6 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
     public Patient? GetByIdAndTenant(string id, string tenantId)
     {
         var org = _context.Organizations.Include(x => x.Patients).ThenInclude(x => x.PatientGroupPatients).First(x => x.Id == tenantId);
-        return org.Patients.FirstOrDefault(x => x.Id == id);     
+        return org.Patients.FirstOrDefault(x => x.Id == id);
     }
 }

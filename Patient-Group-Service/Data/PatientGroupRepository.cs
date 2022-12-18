@@ -24,9 +24,9 @@ public class PatientGroupRepository : GenericRepository<PatientGroup>, IPatientG
             .Include(x => x.PatientGroupPatients)
             .Include(x => x.Organization)
             .Where(x => x.Organization.Id == tenantId)
-            .First(x => x.Id == id);   
+            .First(x => x.Id == id);
     }
-        
+
     public void AddCaregiver(PatientGroup patientGroup, Caregiver caregiver)
     {
         _context.Add(new PatientGroupCaregiver()
@@ -40,7 +40,7 @@ public class PatientGroupRepository : GenericRepository<PatientGroup>, IPatientG
     {
         _context.Remove(patient);
     }
-        
+
     public void RemoveCaregiver(PatientGroupCaregiver caregiver)
     {
         _context.Remove(caregiver);

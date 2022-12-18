@@ -13,7 +13,7 @@ public class OrganizationAuthorizationMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IOrganizationService organizationService)  
+    public async Task InvokeAsync(HttpContext context, IOrganizationService organizationService)
     {
         var tenant = context.User.GetTenantId();
 

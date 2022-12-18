@@ -30,7 +30,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         _context.Set<T>().Remove(entity);
     }
-    
+
     public T Update(T entity)
     {
         _context.Set<T>().Update(entity);

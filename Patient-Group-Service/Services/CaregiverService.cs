@@ -22,9 +22,9 @@ public class CaregiverService : ICaregiverService
         var caregiver = _unitOfWork.Caregivers.GetByAzureIdAndTenant(id, tenantId);
 
         if (caregiver != null) return caregiver;
-        
+
         var newCaregivers = await FetchFromGraph(tenantId);
-            
+
         caregiver = newCaregivers.FirstOrDefault(c => c.AzureID == id);
 
         if (caregiver == null)
@@ -40,7 +40,7 @@ public class CaregiverService : ICaregiverService
         var credential = new ChainedTokenCredential(
             new ClientSecretCredential(tenantId, _configuration["AzureAD:ClientID"],
                 _configuration["AzureAD:ClientSecret"]));
-        
+
         var token = await credential.GetTokenAsync(
             new Azure.Core.TokenRequestContext(
                 new[] { "https://graph.microsoft.com/.default" }));
@@ -57,11 +57,11 @@ public class CaregiverService : ICaregiverService
             }));
 
         var users = await graphServiceClient.Users.Request().GetAsync();
-        var caregivers = users.Select(x => new Caregiver {AzureID = x.Id}).ToList();
+        var caregivers = users.Select(x => new Caregiver { AzureID = x.Id }).ToList();
 
         _unitOfWork.Caregivers.UpdateByTenant(caregivers, tenantId);
         _unitOfWork.Complete();
-                
+
         return caregivers;
     }
 }
